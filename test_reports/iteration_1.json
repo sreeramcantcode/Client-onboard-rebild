@@ -1,0 +1,45 @@
+{
+  "summary": "End-to-end testing of Rebild Client Portal MVP. Backend: 22/22 pytest cases pass (auth, admin client CRUD, invoices, broadcast updates, tickets w/ admin reply, notifications, role enforcement, password reset, seeded services/addons). Frontend: login (admin+client), admin dashboard, sidebar nav, create client (generated password shown), create invoice, post broadcast update, notifications dropdown, profile menu + logout, client login redirect, full client sidebar (Dashboard/Services/Add-ons/Invoices/Updates/Reports/Support/Profile), client sees issued invoice (INV-...), support page, and mobile drawer (375x800) all work.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "ingress", "issue": "One-off 503 'upstream connect error' observed during first run; reproducible only intermittently and clears on retry."},
+      {"endpoint": "/api/auth/login", "issue": "No brute-force lockout / rate limiting implemented (playbook recommends lockout after 5 fails)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin layout", "issues": ["Dark obsidian sidebar + light content area renders cleanly, branding 'Rebild' visible with orange accent. No contrast issues observed."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_rebild_portal.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional, security hardening) Add brute-force lockout / rate limiting on /api/auth/login per auth playbook.",
+    "(Optional) Investigate transient 503 from ingress on cold start — likely infra, not app code."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 835 lines — consider splitting into routers/<resource>.py modules (auth, clients, invoices, updates, tickets, addons, notifications) for maintainability.",
+    "CORS uses single FRONTEND_URL with allow_credentials=True (correct), but CORS_ORIGINS env var in backend/.env is set to '*' and unused — remove dead config to avoid confusion.",
+    "Auth cookie set with secure=True + SameSite=None requires HTTPS; OK for preview. Add CSRF protection for state-changing endpoints if cookie auth is primary.",
+    "verify_password silently returns False on any exception (could hide bcrypt format bugs); log at debug level instead of swallow.",
+    "Bcrypt hashes verified as $2b$ format (correct).",
+    "Seed admin updates password if env changed (idempotent) — good.",
+    "MongoDB _id is consistently excluded via projection / doc_clean — good."
+  ],
+  "updated_files": [
+    "/app/backend/tests/__init__.py (new)",
+    "/app/backend/tests/test_rebild_portal.py (new)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "Admin: admin@rebild.com / Rebild@2026 (seeded). Test clients are created on demand by tests; generated_password returned from POST /api/admin/clients.",
+  "seed_data_creation": "Tests create TEST_/uitest_/final_ prefixed clients and delete them in teardown. Default services (5) and add-ons (4) are auto-seeded by backend on startup.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Use /app/backend/tests/test_rebild_portal.py for regression. All admin and client flows verified including auth, CRUD, role enforcement, broadcast updates, and tickets. To re-test UI: login as admin, create client via Clients > New client, close credentials modal via [data-testid='modal-close'] (important — modal blocks further nav until closed), then proceed. Notifications dropdown / profile dropdown each render a fixed inset-0 overlay z-30; close them by clicking the overlay, not Escape.",
+  "rca of the issue": "N/A — no application bugs found. Initial test-script failures (invoice nav, logout) were due to leftover modal overlay from credentials modal blocking subsequent sidebar clicks; resolved by using [data-testid='modal-close']. App functionality is correct."
+}
