@@ -1,0 +1,119 @@
+{
+  "project_name": "Rebild Client Portal & Admin Panel",
+  "theme": "hybrid_duotone",
+  "archetype": "Archetype 4: Swiss & High-Contrast",
+  "domain": "Creative Agency / SaaS Client Portal",
+  "brand": {
+    "name": "Rebild",
+    "logo_instructions": "Custom UI component: 'Re' in orange (~#F77418), 'bild.' in white, the dot in orange. Use strong typography (e.g. Outfit or Clash Display) for the logo mark. DO NOT use placeholder images.",
+    "colors": {
+      "primary_orange": "#F77418",
+      "obsidian_black": "#0A0A0A",
+      "pure_white": "#FFFFFF"
+    }
+  },
+  "typography": {
+    "font_families": {
+      "heading": "Outfit, sans-serif",
+      "body": "Plus Jakarta Sans, sans-serif"
+    },
+    "rules": {
+      "headings": "Tracking-tight, Outfit, bold or black weights for extreme impact.",
+      "body": "Clean, highly readable Plus Jakarta Sans.",
+      "labels": "Uppercase, tiny, wide spacing (tracking-[0.2em])."
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl",
+      "h3": "text-xl sm:text-2xl",
+      "h4": "text-lg sm:text-xl",
+      "body": "text-base",
+      "small": "text-sm sm:text-xs"
+    }
+  },
+  "color_palette": {
+    "shell_dark": {
+      "background": "#000000",
+      "surface": "#0A0A0A",
+      "border": "#27272A",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#A1A1AA"
+    },
+    "content_light": {
+      "background": "#F4F4F5",
+      "surface": "#FFFFFF",
+      "border": "#E4E4E7",
+      "text_primary": "#09090B",
+      "text_secondary": "#52525B"
+    },
+    "interactive": {
+      "primary_cta": "#F77418",
+      "primary_hover": "#FF8A3D",
+      "primary_text": "#FFFFFF"
+    }
+  },
+  "layout_and_spacing": {
+    "strategy": "Duotone L-Shape App Shell. Dark sidebar and topbar (#0A0A0A) form an L-shape wrapper. The main content area sits inside it as a massive white (#FFFFFF) block with a rounded-tl-3xl border-radius on desktop, creating an 'app within an app' high-end feel.",
+    "spacing_scale": "p-1, p-2, p-4, p-6, p-8, p-12. Generous padding inside the white content area (p-6 to p-12).",
+    "grid_system": "Mode B: The 'Control Room' Grid for dashboard stats (grid-cols-1 md:grid-cols-3 lg:grid-cols-4).",
+    "borders": "Exposed grid borders in data-heavy areas. Light borders (border-border/40) inside the white content area."
+  },
+  "surface_strategies": {
+    "sidebar": "Solid Obsidian Black (#0A0A0A), completely flat, with high-contrast active states.",
+    "topbar": "Solid Obsidian Black (#0A0A0A), flat, houses notifications and profile.",
+    "content_area": "Solid White (#FFFFFF), subtle shadow-sm, rounded-tl-3xl (on md+ screens), acting as a nested container for tables, stats, and settings.",
+    "cards_inside_content": "Flat white background, 1px subtle border (#E4E4E7), no default shadow. Hover adds slight lift (-translate-y-1) and shadow-lg.",
+    "login_screen": "Dark Mode full-bleed background (using login_bg image) with glassmorphism card (backdrop-blur-xl, bg-black/60, 1px border-white/20) for the login form."
+  },
+  "components_and_interactions": {
+    "ui_library": "shadcn/ui customized with Tailwind CSS.",
+    "buttons": "Square or very slightly rounded (rounded-md). High contrast. Primary buttons are #F77418 with white text. Hover states explicitly define background and text color.",
+    "tables": "Dense, crisp data tables in the light content area. Use exposed grid lines (border-b) but keep headers clean. Left-align data.",
+    "inputs": "Shadcn standard inputs, adapted to the light surface (white bg, gray border) with orange focus rings (focus:ring-[#F77418]).",
+    "navigation": "Active states in sidebar should use a subtle #F77418 left border and text color change.",
+    "testing": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
+  },
+  "icons_and_assets": {
+    "library": "lucide-react (default choice) or @phosphor-icons/react.",
+    "imagery_rules": "No placeholder images. Use provided URLs only."
+  },
+  "image_urls": [
+    {
+      "category": "background",
+      "url": "https://static.prod-images.emergentagent.com/jobs/9655bbbc-af8d-443e-a509-826325ac2cf3/images/df7e1bd9d3e9eb72e26c7b5e57dd8443a6d433fc687d8b4e5870e7975e2893e3.png",
+      "description": "High-end abstract 3D geometric waves in deep matte black and bright electric orange. Use as full-bleed background for the Login Screen.",
+      "slug_name": "login_bg"
+    },
+    {
+      "category": "background",
+      "url": "https://static.prod-images.emergentagent.com/jobs/9655bbbc-af8d-443e-a509-826325ac2cf3/images/2a91e9544f3a673be956836aaaddf416fdc03e67b5f41e6d1a64c4c34535c0d6.png",
+      "description": "Luxury dark mode abstract texture. Use for admin panel empty states or hero headers in dark mode.",
+      "slug_name": "admin_bg"
+    },
+    {
+      "category": "avatar",
+      "url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMGF2YXRhcnxlbnwwfHx8fDE3NzkxMzAxNzZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Professional male portrait for client or admin profile avatar."
+    },
+    {
+      "category": "avatar",
+      "url": "https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMGF2YXRhcnxlbnwwfHx8fDE3NzkxMzAxNzZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Professional female portrait for client or admin profile avatar."
+    },
+    {
+      "category": "avatar",
+      "url": "https://images.pexels.com/photos/35839967/pexels-photo-35839967.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "B&W male portrait for team or secondary user avatar."
+    }
+  ],
+  "instructions_to_main_agent": [
+    "Use only valid Javascript React files (.jsx or .js), avoid Typescript unless the environment is already setup for TS.",
+    "Build the Shell structure first: A full-height flex or grid layout where the Sidebar and Topbar are dark (#0A0A0A background, text-white), and the <main> content area is nested within it, featuring bg-white, text-zinc-950, and rounded-tl-3xl on desktop.",
+    "Implement the Rebild logo textually or via SVG exactly as requested: 'Re' in #F77418, 'bild.' in white, with an orange dot.",
+    "Ensure the login page uses the 'login_bg' image full screen with a centered glassmorphism card for the login form.",
+    "Use shadcn components heavily for the table (Invoices, Clients), Inputs (Login, Profile), styling them appropriately for the crisp white surface they sit on.",
+    "Admin and Client portals should have distinct sidebar navigation links (Admin: Dashboard, Clients, Services, Invoices, Add-ons, Tickets, Settings. Client: Dashboard, Services, Add-ons, Invoices, Updates, Reports, Support, Profile), but share the same layout architecture.",
+    "All interactive elements MUST have a data-testid attribute in kebab-case (e.g., data-testid='login-button').",
+    "Ensure mobile responsiveness. On mobile, the sidebar becomes a hamburger menu in the topbar, and the rounded-tl-3xl content area becomes square to fit the screen edges."
+  ]
+}
