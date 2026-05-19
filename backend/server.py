@@ -34,6 +34,7 @@ mongo_client = AsyncIOMotorClient(mongo_url)
 db = mongo_client[os.environ["DB_NAME"]]
 
 
+
 # ---------------- App ----------------
 app = FastAPI(title="Rebild Client Portal API")
 api = APIRouter(prefix="/api")

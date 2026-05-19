@@ -1,4 +1,4 @@
-// File: /app/frontend/src/app/client-portal/admin/layout.tsx
+// File: C:\Users\sreer\Client-onboard-rebild\frontend\src\app\client-portal\admin\layout.tsx
 import * as entry from '../../../../../src/app/client-portal/admin/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
