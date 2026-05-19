@@ -1,0 +1,36 @@
+{
+  "summary": "End-to-end regression on Next.js 14 App Router rebuild of Rebild Client Portal. Backend (unchanged FastAPI): all 22 pytest cases pass — auth, admin/client CRUD, invoices, broadcast updates, tickets+admin reply, notifications, role enforcement, password reset, seeded services/addons. Frontend (Next.js rebuild under /client-portal/*): root redirect, branded login page, admin login → /client-portal/admin, full admin sidebar (Dashboard/Clients/Services/Invoices/Updates/Add-ons/Tickets/Settings), create client (generated_password shown), create invoice with line items, post broadcast update, notifications dropdown w/ unread badge, profile menu + logout, client login → /client-portal/client, full client sidebar (Dashboard/Services/Add-ons/Invoices/Updates/Reports/Support/Profile), view invoice modal + mock-pay, request add-on, open support ticket, admin reply to ticket, cross-role redirect (client → /admin sent back to /client), mobile drawer at 375x800 all verified working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/auth/login", "issue": "No brute-force lockout / rate limiting implemented (auth playbook recommends lockout after 5 fails). Same finding as iteration_1; backend unchanged."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_rebild_portal.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional, security hardening) Add brute-force lockout / rate limiting on /api/auth/login per auth playbook."
+  ],
+  "critical_code_review_comments": [
+    "data-testid naming changed between CRA and Next.js rebuild (e.g. login-email -> login-email-input, create-client-submit, item-desc-0, post-update-submit). If a stable test contract is desired, consider keeping the IDs identical to iteration_1 to avoid breaking external test suites.",
+    "Two console 401 errors fire on /client-portal/login because /api/auth/me is called pre-login (expected when unauthenticated, but noisy). Consider suppressing the error log for the initial 401 in auth-context.tsx or only calling /me when a token cookie exists.",
+    "server.py still 800+ lines — consider routers split (same comment as iteration_1).",
+    "CORS_ORIGINS='*' in backend/.env is unused (FRONTEND_URL drives CORS in code). Remove dead env var.",
+    "Bcrypt hashes verified $2b$ format, httpOnly cookie set on login with Secure+SameSite=None, seed_admin idempotent — all auth playbook checks pass."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (22/22 pytest)", "frontend": "100% (17/17 flows: root redirect, login render, admin login, admin sidebar [8 links], create client, create invoice, post update, notifications, logout, client login, client sidebar [8 links], view invoice, pay invoice, request addon, create ticket, admin reply ticket, cross-role redirect, mobile drawer)"},
+  "test_credentials": "Admin: admin@rebild.com / Rebild@2026 (seeded). Test client created during run: UI Auto 1779164944 / uitest_1779164944@example.com with generated 14-char password.",
+  "seed_data_creation": "Tests create uitest_<ts>@example.com clients (left in DB; same convention as iteration_1 which prefixes with TEST_/uitest_/final_).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Routes are now under /client-portal/* — login at /client-portal/login, admin at /client-portal/admin, client at /client-portal/client. Important selector differences from iteration_1: login-email-input / login-password-input / login-submit-button; create-client-submit (not client-form-submit); invoice modal uses line-items (item-desc-0, item-qty-0, item-price-0) + invoice-client select + create-invoice-submit; update form uses update-title / update-body / post-update-submit; notifications bell is topbar-notifications-button (not notifications-bell). Sidebar testids: nav-add-ons (hyphen). Modal-close still closes credentials/forms; mobile burger is mobile-menu-button + mobile-close. When selecting client in invoice form, the dropdown lists ALL clients ever created — search by partial name via JS evaluate rather than label match.",
+  "rca of the issue": "N/A — no application bugs found. One playwright run failure was due to test-script using stale selectors from iteration_1 (login-email instead of login-email-input) and label-based select_option on a dropdown containing many similarly-named test clients; both resolved by reading current data-testids and matching option by JS includes(). App functionality fully verified."
+}
