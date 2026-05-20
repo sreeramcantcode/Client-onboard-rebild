@@ -29,7 +29,7 @@ function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
   const isReports = filterCategory === "Report";
 
   return (
-    <div className="p-6 md:p-10">
+    <div className="p-7 md:p-10">
       <PageHeader
         eyebrow={isReports ? "Performance" : "Newsroom"}
         title={isReports ? "Reports" : "Updates"}
