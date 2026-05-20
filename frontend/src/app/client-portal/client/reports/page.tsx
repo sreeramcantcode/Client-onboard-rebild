@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import ClientUpdatesPage from "../updates/page";
+import ClientUpdatesView from "@/components/ClientUpdatesView";
 
 export default function ClientReportsPage() {
-  return <ClientUpdatesPage filterCategory="Report" />;
+  return <ClientUpdatesView filterCategory="Report" />;
 }
