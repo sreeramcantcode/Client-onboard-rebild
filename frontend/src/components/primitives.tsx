@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
 export function PageHeader({
   title,
@@ -42,7 +43,7 @@ export function StatCard({
   label: string;
   value: React.ReactNode;
   hint?: string;
-  icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon?: LucideIcon;
   accent?: boolean;
 }) {
   return (

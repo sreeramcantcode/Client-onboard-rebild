@@ -80,6 +80,7 @@ function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
   );
 }
 
-export default function ClientUpdatesPage() {
+// After
+export default function ClientUpdatesPage({ filterCategory }: { filterCategory?: string }) {
   return <ClientUpdatesView />;
 }
