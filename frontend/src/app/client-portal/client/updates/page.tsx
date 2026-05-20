@@ -13,7 +13,7 @@ interface Update {
   created_at: string;
 }
 
-export function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
+function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
   const [updates, setUpdates] = useState<Update[] | null>(null);
 
   useEffect(() => {
