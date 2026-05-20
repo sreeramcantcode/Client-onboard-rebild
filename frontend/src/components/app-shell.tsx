@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 import {
   Home,
   Briefcase,
@@ -29,10 +30,12 @@ import api from "@/lib/api";
 import { PORTAL_BASE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+
+
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: LucideIcon;
   exact?: boolean;
 }
 

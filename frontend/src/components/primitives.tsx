@@ -82,7 +82,7 @@ export function EmptyState({
   description,
   action,
 }: {
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: LucideIcon;
   title: string;
   description?: string;
   action?: React.ReactNode;
