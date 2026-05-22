@@ -56,7 +56,12 @@ export function StatCard({
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-mono">{label}</div>
-          <div className="font-display font-black text-3xl sm:text-4xl mt-2 tracking-tight text-zinc-950">
+          <div
+  className={cn(
+    "font-display font-black text-3xl sm:text-4xl mt-2 tracking-tight",
+    accent ? "text-black" : "text-zinc-950"
+  )}
+>
             {value}
           </div>
           {hint && <div className="text-xs text-zinc-500 mt-2">{hint}</div>}

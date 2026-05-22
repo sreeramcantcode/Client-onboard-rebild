@@ -114,3 +114,70 @@ body {
 .fade-rise {
     animation: fadeRise 0.5s ease both;
 }
+
+
+
+/* ============================================
+   Dark theme override for client + admin pages
+   (login is unaffected — it's outside .portal-dark)
+   ============================================ */
+
+.portal-dark .bg-white,
+.portal-dark .bg-zinc-50,
+.portal-dark [class*="bg-zinc-50/"] {
+    background-color: #0a0a0a !important;
+}
+
+.portal-dark .bg-zinc-100 {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.portal-dark .text-zinc-950,
+.portal-dark .text-zinc-900,
+.portal-dark .text-zinc-800 {
+    color: #ffffff !important;
+}
+
+.portal-dark .text-zinc-700,
+.portal-dark .text-zinc-600 {
+    color: #d4d4d8 !important;
+}
+
+.portal-dark .text-zinc-500,
+.portal-dark .text-zinc-400 {
+    color: #a1a1aa !important;
+}
+
+.portal-dark .border-zinc-100,
+.portal-dark .border-zinc-200,
+.portal-dark .border-zinc-300 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.portal-dark .hover\:bg-zinc-50:hover,
+.portal-dark .hover\:bg-zinc-50\/50:hover,
+.portal-dark .hover\:border-zinc-300:hover,
+.portal-dark .hover\:border-zinc-900:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Inputs / textarea / select inside dark portal */
+.portal-dark input,
+.portal-dark textarea,
+.portal-dark select {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+.portal-dark input::placeholder,
+.portal-dark textarea::placeholder {
+    color: #71717a !important;
+}
+
+/* Modals should still feel premium — slightly elevated dark */
+.portal-dark [data-testid="modal"] {
+    background-color: #0c0c0d !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+
+}

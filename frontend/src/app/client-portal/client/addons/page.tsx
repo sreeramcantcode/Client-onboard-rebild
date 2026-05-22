@@ -87,7 +87,7 @@ export default function ClientAddonsPage() {
               <div className="text-sm text-zinc-500 mt-1.5 min-h-[40px]">{a.description}</div>
               <div className="mt-5 flex items-center justify-between">
                 <div className="font-display font-black text-2xl text-zinc-900">
-                  ${a.price?.toFixed(0) || 0}
+                  ₹{a.price?.toFixed(0) || 0}
                   <span className="text-xs font-normal text-zinc-500"> / one-time</span>
                 </div>
                 {requested ? (
@@ -98,7 +98,7 @@ export default function ClientAddonsPage() {
                   <button
                     onClick={() => setSelected(a)}
                     data-testid={`request-addon-${a.id}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-900 hover:text-[#F77418] transition"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text- border-1 bg-zinc-500 rounded-md p-2 px-4 hover:text-orange-500 hover:bg-black transition"
                   >
                     Request <Send className="w-3.5 h-3.5" />
                   </button>
@@ -126,7 +126,7 @@ export default function ClientAddonsPage() {
                 {requests.map((r) => (
                   <tr key={r.id} className="border-t border-zinc-100">
                     <td className="px-4 py-3 font-medium text-zinc-900">{r.addon_name}</td>
-                    <td className="px-4 py-3 font-mono text-zinc-700">${r.addon_price?.toFixed(2)}</td>
+                    <td className="px-4 py-3 font-mono text-zinc-700">₹{r.addon_price?.toFixed(2)}</td>
                     <td className="px-4 py-3">
                       <Pill status={r.status} />
                     </td>

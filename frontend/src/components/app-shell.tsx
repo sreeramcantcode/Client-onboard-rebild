@@ -352,7 +352,7 @@ export default function AppShell({
         </header>
 
         <main className="flex-1 bg-[#0a0a0a] p-0 sm:p-3 md:p-4">
-          <div className="bg-white text-zinc-900 min-h-[calc(100vh-64px-32px)] md:rounded-2xl shadow-sm overflow-hidden">
+          <div className="portal-dark bg-[#0a0a0a] text-white min-h-[calc(100vh-64px-32px)] md:rounded-2xl shadow-sm overflow-hidden">
             {children}
           </div>
         </main>

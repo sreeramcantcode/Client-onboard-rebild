@@ -83,7 +83,7 @@ export default function ClientInvoicesPage() {
                       {inv.number}
                     </td>
                     <td className="px-4 py-4 font-display font-bold text-zinc-900">
-                      ${inv.total?.toFixed(2)}
+                      ₹{inv.total?.toFixed(2)}
                     </td>
                     <td className="px-4 py-4">
                       <Pill status={inv.status} />
@@ -195,7 +195,7 @@ export default function ClientInvoicesPage() {
               </div>
             )}
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-12 flex justify-end gap-3">
               <button
                 onClick={() => window.print()}
                 className="inline-flex items-center gap-2 border border-zinc-300 hover:border-zinc-900 px-4 py-2.5 rounded-md text-sm font-semibold"
@@ -204,9 +204,7 @@ export default function ClientInvoicesPage() {
                 <Download className="w-4 h-4" /> Download / Print
               </button>
               {open.status === "open" && (
-                <PrimaryButton onClick={() => pay(open.id)} data-testid="pay-invoice-button">
-                  <CheckCircle2 className="w-4 h-4" /> Mark as paid
-                </PrimaryButton>
+               <PrimaryButton>Pay Amount</PrimaryButton>
               )}
             </div>
           </div>

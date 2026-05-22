@@ -31,7 +31,7 @@ export function RebildMarkOnLight({ size = "md", className = "" }: Props) {
       className={`font-display font-black tracking-tight leading-none select-none ${sizes[size]} ${className}`}
     >
       <span style={{ color: "#F77418" }}>Re</span>
-      <span style={{ color: "#0A0A0A" }}>bild</span>
+      <span className="text-white">bild</span>
       <span style={{ color: "#F77418" }}>.</span>
     </span>
   );

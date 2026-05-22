@@ -147,7 +147,7 @@ export default function AdminInvoicesPage() {
                     <td className="px-4 py-3 font-mono font-semibold text-zinc-900">{inv.number}</td>
                     <td className="px-4 py-3 text-zinc-900">{inv.client_name}</td>
                     <td className="px-4 py-3 font-display font-bold text-zinc-900">
-                      ${inv.total?.toFixed(2)}
+                      ₹{inv.total?.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
                       <Pill status={inv.status} />
@@ -299,7 +299,7 @@ export default function AdminInvoicesPage() {
           <div className="flex justify-between items-center border-t border-zinc-100 pt-4">
             <div className="text-sm text-zinc-600">Total</div>
             <div className="font-display font-black text-2xl text-zinc-900">
-              ${total.toFixed(2)}
+              ₹{total.toFixed(2)}
             </div>
           </div>
           {error && <div className="text-sm text-red-600">{error}</div>}

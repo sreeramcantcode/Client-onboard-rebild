@@ -80,7 +80,7 @@ export default function ClientDashboardPage() {
   const u = data.user;
 
   return (
-    <div className="p-6 md:p-10">
+    <div className="p-6 md:p-10 ">
       <PageHeader
         eyebrow={`Welcome back, ${u.name?.split(" ")[0] || "client"}`}
         title="Your Rebild workspace."
@@ -95,7 +95,7 @@ export default function ClientDashboardPage() {
                 Action required
               </div>
               <div className="font-display font-black text-2xl md:text-3xl">
-                You have 1 invoice waiting · ${data.pending_amount?.toFixed(2)}
+                You have 1 invoice waiting · ₹{data.pending_amount?.toFixed(2)}
               </div>
               <div className="text-sm text-zinc-400 mt-2">
                 {data.next_invoice.number} · {data.next_invoice.items?.length || 0} items
@@ -204,7 +204,7 @@ export default function ClientDashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <Section title="Working hours" hint="Eastern Standard Time">
+          <Section title="Working hours" hint="Indian Standard Time">
             <div className="border border-zinc-200 rounded-xl overflow-hidden">
               {[
                 ["Mon - Fri", "9 AM – 7 PM"],

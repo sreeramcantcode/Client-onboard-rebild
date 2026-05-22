@@ -55,14 +55,14 @@ export default function AdminDashboardPage() {
         />
         <StatCard
           label="Revenue"
-          value={`$${stats.revenue.toLocaleString()}`}
+          value={`₹${stats.revenue.toLocaleString()}`}
           hint="Total paid"
           icon={DollarSign}
         />
         <StatCard
           label="Open invoices"
           value={stats.open_invoices}
-          hint={`$${stats.pending_revenue.toLocaleString()} pending`}
+          hint={`₹${stats.pending_revenue.toLocaleString()} pending`}
           icon={Receipt}
         />
         <StatCard
@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="font-display font-bold text-zinc-900">
-                      ${inv.total?.toFixed(2)}
+                      ₹{inv.total?.toFixed(2)}
                     </div>
                     <Pill status={inv.status} />
                   </div>
