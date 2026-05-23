@@ -380,7 +380,7 @@ async def create_invoice(payload: InvoiceIn, _: dict = Depends(require_admin)):
             "id": str(uuid.uuid4()),
             "user_id": payload.client_id,
             "title": "New invoice issued",
-            "body": f"{invoice['number']} • ${invoice['total']:.2f}",
+            "body": f"{invoice['number']} • ₹{invoice["₹",'total']:.2f}",
             "type": "invoice",
             "read": False,
             "link": "/client/invoices",

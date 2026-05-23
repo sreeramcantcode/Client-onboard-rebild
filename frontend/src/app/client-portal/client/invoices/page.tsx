@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { QRCodeCanvas } from "qrcode.react";
+
 import {
   PageHeader,
   Loader,
@@ -32,6 +34,7 @@ export default function ClientInvoicesPage() {
   const { user } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[] | null>(null);
   const [open, setOpen] = useState<Invoice | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
 
   const load = async () => {
     const i = await api.get<Invoice[]>("/client/invoices");
@@ -158,10 +161,10 @@ export default function ClientInvoicesPage() {
                       <td className="px-4 py-3 text-zinc-900">{it.description}</td>
                       <td className="px-4 py-3 text-right text-zinc-700">{it.qty}</td>
                       <td className="px-4 py-3 text-right text-zinc-700 font-mono">
-                        ${it.unit_price?.toFixed(2)}
+                        ₹{it.unit_price?.toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-right font-mono text-zinc-900">
-                        ${(it.unit_price * it.qty).toFixed(2)}
+                        ₹{(it.unit_price * it.qty).toFixed(2)}
                       </td>
                     </tr>
                   ))}
@@ -173,15 +176,15 @@ export default function ClientInvoicesPage() {
               <div className="w-full sm:w-72 space-y-2 text-sm">
                 <div className="flex justify-between text-zinc-600">
                   <span>Subtotal</span>
-                  <span className="font-mono">${open.subtotal?.toFixed(2)}</span>
+                  <span className="font-mono">₹{open.subtotal?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-zinc-600">
                   <span>Tax</span>
-                  <span className="font-mono">${open.tax?.toFixed(2)}</span>
+                  <span className="font-mono">₹{open.tax?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between border-t border-zinc-200 pt-2 font-display font-bold text-lg text-zinc-900">
                   <span>Total</span>
-                  <span>${open.total?.toFixed(2)}</span>
+                  <span>₹{open.total?.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -204,8 +207,45 @@ export default function ClientInvoicesPage() {
                 <Download className="w-4 h-4" /> Download / Print
               </button>
               {open.status === "open" && (
-               <PrimaryButton>Pay Amount</PrimaryButton>
+              <PrimaryButton onClick={() => setShowPayment(true)}>
+               Pay Amount 
+               </PrimaryButton>
+               
               )}
+
+              {showPayment && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div className="bg-[#111] border border-white/10 rounded-2xl p-8 w-[340px] text-center">
+      
+      <h2 className="text-xl font-bold text-white mb-2">
+        Pay Invoice
+      </h2>
+
+      <p className="text-zinc-400 text-sm mb-6">
+        Scan using any UPI app
+      </p>
+
+      <div className="bg-white p-4 rounded-xl inline-block">
+       <QRCodeCanvas
+  value={`upi://pay?pa=9908604748@ybl&pn=Rebild&am=${open.total}&cu=INR`}
+  size={220}
+/>
+      
+      </div>
+
+      <div className="mt-5 text-2xl font-bold text-white">
+        ₹{open.total}
+      </div>
+
+      <button
+        onClick={() => setShowPayment(false)}
+        className="mt-6 w-full py-2 rounded-lg bg-[#F77418] text-black font-semibold"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
             </div>
           </div>
         )}

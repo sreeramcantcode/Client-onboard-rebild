@@ -1,9 +1,9 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
+  "/client-portal/client/page": "app/client-portal/client/page.js",
+  "/client-portal/admin/page": "app/client-portal/admin/page.js",
   "/client-portal/client/invoices/page": "app/client-portal/client/invoices/page.js",
   "/client-portal/admin/invoices/page": "app/client-portal/admin/invoices/page.js",
-  "/client-portal/client/services/page": "app/client-portal/client/services/page.js",
-  "/client-portal/client/reports/page": "app/client-portal/client/reports/page.js",
-  "/client-portal/client/addons/page": "app/client-portal/client/addons/page.js",
-  "/client-portal/client/page": "app/client-portal/client/page.js"
+  "/client-portal/admin/tickets/page": "app/client-portal/admin/tickets/page.js",
+  "/client-portal/admin/addons/page": "app/client-portal/admin/addons/page.js",
+  "/client-portal/admin/updates/page": "app/client-portal/admin/updates/page.js"
 }
