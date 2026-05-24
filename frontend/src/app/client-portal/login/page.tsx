@@ -60,7 +60,7 @@ export default function LoginPage() {
             <div className="text-[10px] uppercase tracking-[0.3em] text-[#F77418] font-mono">
               Client Portal
             </div>
-            <h1 className="font-display font-black text-5xl xl:text-6xl leading-[0.95] tracking-tight">
+            <h1 className="font-black text-5xl xl:text-6xl leading-[0.95] tracking-tight">
               Your <span className="text-[#F77418]">brand,</span>
               <br />
               rebuilt every
@@ -92,7 +92,7 @@ export default function LoginPage() {
               <div className="text-[10px] uppercase tracking-[0.3em] text-[#F77418] font-mono mb-3">
                 Welcome back
               </div>
-              <h2 className="font-display font-black text-3xl sm:text-4xl tracking-tight text-white">
+              <h2 className="font-black text-3xl sm:text-4xl tracking-tight text-white">
                 Sign in to your portal
               </h2>
               <p className="text-zinc-500 text-sm mt-2">

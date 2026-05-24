@@ -399,7 +399,7 @@ async def create_invoice(payload: InvoiceIn, _: dict = Depends(require_admin)):
             "id": str(uuid.uuid4()),
             "user_id": payload.client_id,
             "title": "New invoice issued",
-            "body": f"{invoice['number']} • ₹{invoice["₹",'total']:.2f}",
+            "body": f"{invoice['number']} • ₹{invoice['total']:.2f}",
             "type": "invoice",
             "read": False,
             "link": "/client/invoices",
@@ -448,6 +448,7 @@ async def client_pay_invoice(invoice_id: str, user: dict = Depends(require_clien
 
 
 # ---------------- Updates ----------------
+
 @api.post("/admin/updates")
 async def create_update(payload: UpdateIn, _: dict = Depends(require_admin)):
     doc = {
@@ -679,13 +680,36 @@ async def admin_list_addon_requests(_: dict = Depends(require_admin)):
 
 
 @api.patch("/admin/addons/requests/{req_id}")
-async def admin_update_addon_request(req_id: str, payload: TicketStatusIn, _: dict = Depends(require_admin)):
-    # reuse status enum
-    res = await db.addon_requests.update_one({"id": req_id}, {"$set": {"status": payload.status}})
-    if res.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Request not found")
-    return {"ok": True}
+async def admin_update_addon_request(
+    req_id: str,
+    payload: TicketStatusIn,
+    _: dict = Depends(require_admin),
+):
+    request_doc = await db.addon_requests.find_one({"id": req_id})
 
+    if not request_doc:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    await db.addon_requests.update_one(
+        {"id": req_id},
+        {"$set": {"status": payload.status}}
+    )
+
+    # notify client
+    await db.notifications.insert_one(
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": request_doc["client_id"],
+            "title": f"Add-on request {payload.status}",
+            "body": f"{request_doc['addon_name']} request was {payload.status}",
+            "type": "addon",
+            "read": False,
+            "link": "/client/addons",
+            "created_at": now_iso(),
+        }
+    )
+
+    return {"ok": True}
 
 # ---------------- Notifications ----------------
 @api.get("/notifications")
