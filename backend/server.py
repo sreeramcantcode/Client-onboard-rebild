@@ -206,6 +206,10 @@ class AddOnRequestIn(BaseModel):
     addon_id: str
     note: Optional[str] = ""
 
+class ClientProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    company: Optional[str] = None
+
 
 # ---------------- Auth Endpoints ----------------
 @api.post("/auth/login")
@@ -301,7 +305,22 @@ async def delete_client(client_id: str, _: dict = Depends(require_admin)):
     await db.notifications.delete_many({"user_id": client_id})
     await db.addon_requests.delete_many({"client_id": client_id})
     return {"ok": True}
+@api.patch("/client/profile")
+async def update_client_profile(
+    payload: ClientProfileUpdate,
+    user: dict = Depends(require_client),
+):
+    updates = {
+        k: v for k, v in payload.model_dump().items()
+        if v is not None
+    }
 
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": updates}
+    )
+
+    return {"ok": True}
 
 # ---------------- Admin: Services ----------------
 @api.get("/services")

@@ -90,19 +90,18 @@ export default function ClientAddonsPage() {
                   ₹{a.price?.toFixed(0) || 0}
                   <span className="text-xs font-normal text-zinc-500"> / one-time</span>
                 </div>
-                {requested ? (
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-md">
-                    Requested
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => setSelected(a)}
-                    data-testid={`request-addon-${a.id}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text- border-1 bg-zinc-500 rounded-md p-2 px-4 hover:text-orange-500 hover:bg-black transition"
-                  >
-                    Request <Send className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <button
+  onClick={() => setSelected(a)}
+  data-testid={`request-addon-${a.id}`}
+  className={`inline-flex items-center gap-1.5 text-sm font-semibold rounded-md p-2 px-4 transition ${
+    requested
+      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
+      : "bg-zinc-500 text-white hover:text-orange-500 hover:bg-black"
+  }`}
+>
+  {requested ? "Request Again" : "Request"}
+  <Send className="w-3.5 h-3.5" />
+</button>
               </div>
             </div>
           );

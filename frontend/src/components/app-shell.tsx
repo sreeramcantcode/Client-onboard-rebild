@@ -264,6 +264,12 @@ export default function AppShell({
 }) {
   const { logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const allRoutes = [...CLIENT_NAV, ...ADMIN_NAV];
+
+const filteredRoutes = allRoutes.filter((item) =>
+  item.label.toLowerCase().includes(search.toLowerCase())
+);
   const pathname = usePathname();
   const router = useRouter();
   const nav = kind === "admin" ? ADMIN_NAV : CLIENT_NAV;
@@ -340,12 +346,43 @@ export default function AppShell({
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-md bg-white/[0.04] border border-white/10 text-xs text-zinc-500 w-72">
-              <Search className="w-3.5 h-3.5" />
-              <span>Search…</span>
-              <kbd className="ml-auto text-[10px] font-mono text-zinc-600 border border-white/10 rounded px-1.5 py-0.5">
-                ⌘K
-              </kbd>
-            </div>
+  <Search className="w-3.5 h-3.5" />
+
+  <input
+    type="text"
+    placeholder="Search..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="bg-transparent outline-none flex-1 text-sm text-white placeholder:text-zinc-500"
+  />
+
+  <kbd className="ml-auto text-[10px] font-mono text-zinc-600 border border-white/10 rounded px-1.5 py-0.5">
+    ⌘K
+  </kbd>
+
+  {search && (
+  <div className="absolute top-14 right-0 w-72 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+    {filteredRoutes.length > 0 ? (
+      filteredRoutes.map((item) => (
+        <button
+          key={item.href}
+          onClick={() => {
+            router.push(item.href);
+            setSearch("");
+          }}
+          className="w-full px-4 py-3 text-left hover:bg-white/5 text-sm text-zinc-300 border-b border-white/5"
+        >
+          {item.label}
+        </button>
+      ))
+    ) : (
+      <div className="px-4 py-3 text-sm text-zinc-500">
+        No results found
+      </div>
+    )}
+  </div>
+)}
+</div>
             <NotificationsBell />
             <ProfileMenu onLogout={handleLogout} />
           </div>

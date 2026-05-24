@@ -13,7 +13,7 @@ import {
   Modal,
 } from "@/components/primitives";
 import { Receipt, Download, CheckCircle2 } from "lucide-react";
-import { RebildMarkOnLight } from "@/components/rebild-logo";
+import { RebildMarkOnLight , Rebildinvoice } from "@/components/rebild-logo";
 import { useAuth } from "@/lib/auth-context";
 
 interface InvoiceItem { description: string; qty: number; unit_price: number }
@@ -133,7 +133,7 @@ export default function ClientInvoicesPage() {
                   From
                 </div>
                 <div className="font-semibold text-zinc-900 mt-1">Rebild Marketing</div>
-                <div className="text-zinc-500 text-xs mt-1">billing@rebild.com</div>
+                <div className="text-zinc-500 text-xs mt-1">billing@rebild.in</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-mono">

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
-import { PageHeader, Loader, EmptyState, Pill } from "@/components/primitives";
+import { PageHeader, Loader, EmptyState, Pill , Modal } from "@/components/primitives";
 import { BellRing, FileText } from "lucide-react";
 
 interface Update {
@@ -15,6 +15,7 @@ interface Update {
 
 export default function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
   const [updates, setUpdates] = useState<Update[] | null>(null);
+  const [selectedUpdate, setSelectedUpdate] = useState<any | null>(null);
 
   useEffect(() => {
     api.get<Update[]>("/client/updates").then((r) => setUpdates(r.data || []));
@@ -57,7 +58,10 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
             {filtered.map((u) => (
               <div key={u.id} className="relative">
                 <div className="absolute -left-[18px] sm:-left-[26px] top-3 w-3 h-3 rounded-full bg-[#F77418] ring-4 ring-orange-50" />
-                <div className="border border-zinc-200 rounded-2xl p-5 hover:border-[#F77418]/40 hover:shadow-md transition">
+                 <div
+  onClick={() => setSelectedUpdate(u)}
+  className="cursor-pointer border border-zinc-200 rounded-2xl p-5 hover:border-[#F77418]/40 hover:shadow-md transition"
+>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Pill status={u.category || "update"} />
                     <span className="text-xs text-zinc-400 font-mono">
@@ -75,7 +79,39 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
             ))}
           </div>
         </div>
+        
       )}
+     
+     <Modal
+  open={!!selectedUpdate}
+  onClose={() => setSelectedUpdate(null)}
+  title={selectedUpdate?.title || "Update"}
+>
+  {selectedUpdate && (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Pill status={selectedUpdate.category || "update"} />
+
+        <span className="text-xs text-zinc-500 font-mono">
+          {new Date(selectedUpdate.created_at).toLocaleDateString(undefined, {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </span>
+      </div>
+
+      <div className="text-2xl font-bold text-white">
+        {selectedUpdate.title}
+      </div>
+
+      <div className="text-sm leading-7 text-zinc-300 whitespace-pre-line">
+        {selectedUpdate.body}
+      </div>
+    </div>
+  )}
+</Modal>
+      
     </div>
   );
 }

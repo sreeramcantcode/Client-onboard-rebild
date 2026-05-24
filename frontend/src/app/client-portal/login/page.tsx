@@ -58,7 +58,7 @@ export default function LoginPage() {
           <RebildLogo size="lg" />
           <div className="space-y-8 max-w-md">
             <div className="text-[10px] uppercase tracking-[0.3em] text-[#F77418] font-mono">
-              Client Portal · v1
+              Client Portal
             </div>
             <h1 className="font-display font-black text-5xl xl:text-6xl leading-[0.95] tracking-tight">
               Your <span className="text-[#F77418]">brand,</span>
