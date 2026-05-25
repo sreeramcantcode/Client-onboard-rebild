@@ -147,6 +147,8 @@ class UpdateClientIn(BaseModel):
     services: Optional[List[str]] = None
     notes: Optional[str] = None
     active: Optional[bool] = None
+    attachment_url: Optional[str] = None
+    attachment_name: Optional[str] = None
 
 
 class ResetPasswordIn(BaseModel):
@@ -873,7 +875,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         os.environ.get("FRONTEND_URL", ""),
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "https://portal.rebild.in",
+        "https://client-onboard-rebild.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],

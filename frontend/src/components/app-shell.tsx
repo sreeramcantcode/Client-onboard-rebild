@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
+
 import {
   Home,
   Briefcase,
@@ -288,7 +289,7 @@ const filteredRoutes = allRoutes.filter((item) =>
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       <aside className="hidden md:flex w-[252px] shrink-0 flex-col bg-[#0a0a0a] border-r border-white/[0.06] sticky top-0 h-screen">
-        <div className="px-5 pt-6 pb-4 flex items-center justify-between">
+        <div className="px-5 pt-6 pb-4 cursor-pointer flex items-center justify-between">
           <RebildLogo size="md" />
           <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 border border-white/10 px-1.5 py-0.5 rounded">
             {kind === "admin" ? "Admin" : "Portal"}
@@ -361,7 +362,7 @@ const filteredRoutes = allRoutes.filter((item) =>
   </kbd>
 
   {search && (
-  <div className="absolute top-14 right-0 w-72 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+  <div className="absolute top-14  w-72 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
     {filteredRoutes.length > 0 ? (
       filteredRoutes.map((item) => (
         <button

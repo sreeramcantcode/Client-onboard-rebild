@@ -53,7 +53,7 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
         />
       ) : (
         <div className="relative pl-6 sm:pl-10">
-          <div className="absolute left-2 sm:left-4 top-2 bottom-2 w-px bg-zinc-200" />
+          
           <div className="space-y-6">
             {filtered.map((u) => (
               <div key={u.id} className="relative">
@@ -73,7 +73,23 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
                     </span>
                   </div>
                   <div className="font-display font-bold text-lg text-zinc-900 mt-2">{u.title}</div>
-                  <div className="text-sm text-zinc-600 mt-2 whitespace-pre-line">{u.body}</div>
+                  <div className="mt-2">
+  <div className="text-sm text-zinc-600 whitespace-pre-line line-clamp-1">
+    {u.body}
+  </div>
+
+  {u.body.length > 80 && (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedUpdate(u);
+      }}
+      className="mt-2 text-sm font-semibold text-[#F77418] hover:underline"
+    >
+      Read more
+    </button>
+  )}
+</div>
                 </div>
               </div>
             ))}
