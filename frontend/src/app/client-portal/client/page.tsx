@@ -103,7 +103,7 @@ export default function ClientDashboardPage() {
             </div>
             <Link
               href={`${PORTAL_BASE}/client/invoices`}
-              className="inline-flex items-center gap-2 bg-[#F77418] hover:bg-[#ff8a3d] text-black font-bold px-5 py-3 rounded-md transition"
+              className="inline-flex items-center gap-2  hover:bg-[#ff8a3d] text-black font-bold px-5 py-3 rounded-md transition"
               data-testid="dashboard-go-to-billing"
             >
               Go to billing
@@ -112,12 +112,12 @@ export default function ClientDashboardPage() {
           </div>
         </div>
       ) : (
-        <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-6 flex items-center gap-4">
+        <div className=" portal-dark mb-8 rounded-2xl border border-orange-500 p-6 flex items-center gap-4">
           <div className="w-10 h-10 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-display font-bold text-zinc-900">You&apos;re all set.</div>
+            <div className=" font-display font-bold text-zinc-900">You&apos;re all set.</div>
             <div className="text-sm text-zinc-600">
               No pending invoices. Sit back — we&apos;re cooking up your next deliverable.
             </div>

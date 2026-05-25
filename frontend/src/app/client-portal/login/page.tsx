@@ -57,7 +57,7 @@ export default function LoginPage() {
         <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-white/5">
           <RebildLogo size="lg" />
           <div className="space-y-8 max-w-md">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-[#F77418] font-mono">
+            <div className="text-[20px] uppercase tracking-[0.3em] text-[#F77418] font-mono">
               Client Portal
             </div>
             <h1 className="font-black text-5xl xl:text-6xl leading-[0.95] tracking-tight">

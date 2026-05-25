@@ -16,6 +16,8 @@ interface Update {
 export default function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
   const [updates, setUpdates] = useState<Update[] | null>(null);
   const [selectedUpdate, setSelectedUpdate] = useState<any | null>(null);
+  const [attachmentUrl, setAttachmentUrl] = useState("");
+const [attachmentName, setAttachmentName] = useState("");
 
   useEffect(() => {
     api.get<Update[]>("/client/updates").then((r) => setUpdates(r.data || []));
@@ -124,6 +126,8 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
       <div className="text-sm leading-7 text-zinc-300 whitespace-pre-line">
         {selectedUpdate.body}
       </div>
+
+      
     </div>
   )}
 </Modal>

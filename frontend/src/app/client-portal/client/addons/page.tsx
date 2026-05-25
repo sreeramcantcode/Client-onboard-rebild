@@ -60,7 +60,21 @@ export default function ClientAddonsPage() {
     }
   };
 
-  const requestedIds = new Set(requests.map((r) => r.addon_id));
+  const requestedMap = new Map(
+  requests.map((r) => [r.addon_id, r])
+);
+
+const cancelRequest = async (reqId: string) => {
+  try {
+    await api.delete(`/client/addons/request/${reqId}`);
+
+    setRequests((prev) =>
+      prev.filter((r) => r.id !== reqId)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className="p-6 md:p-10">
@@ -73,7 +87,8 @@ export default function ClientAddonsPage() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {addons.map((a) => {
           const Icon = getIcon(a.icon);
-          const requested = requestedIds.has(a.id);
+          const request = requestedMap.get(a.id);
+const requested = !!request;
           return (
             <div
               key={a.id}
@@ -91,15 +106,33 @@ export default function ClientAddonsPage() {
                   <span className="text-xs font-normal text-zinc-500"> / one-time</span>
                 </div>
                 <button
-  onClick={() => setSelected(a)}
+  onClick={() => {
+    if (requested && request) {
+      cancelRequest(request.id);
+    } else {
+      setSelected(a);
+    }
+  }}
   data-testid={`request-addon-${a.id}`}
-  className={`inline-flex items-center gap-1.5 text-sm font-semibold rounded-md p-2 px-4 transition ${
+  className={`group inline-flex items-center gap-1.5 text-sm font-semibold rounded-md p-2 px-4 transition ${
     requested
-      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
+      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
       : "bg-zinc-500 text-white hover:text-orange-500 hover:bg-black"
   }`}
 >
-  {requested ? "Request Again" : "Request"}
+  <span>
+    {requested ? (
+      <>
+        <span className="group-hover:hidden">Requested</span>
+        <span className="hidden group-hover:inline">
+          Cancel Request
+        </span>
+      </>
+    ) : (
+      "Request"
+    )}
+  </span>
+
   <Send className="w-3.5 h-3.5" />
 </button>
               </div>

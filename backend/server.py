@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from pathlib import Path
 
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
@@ -451,6 +452,7 @@ async def client_pay_invoice(invoice_id: str, user: dict = Depends(require_clien
 
 # ---------------- Updates ----------------
 
+
 @api.post("/admin/updates")
 async def create_update(payload: UpdateIn, _: dict = Depends(require_admin)):
     doc = {
@@ -673,6 +675,21 @@ async def client_request_addon(payload: AddOnRequestIn, user: dict = Depends(req
 async def client_list_addon_requests(user: dict = Depends(require_client)):
     items = await db.addon_requests.find({"client_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(500)
     return items
+
+@api.delete("/client/addons/request/{req_id}")
+async def client_delete_addon_request(
+    req_id: str,
+    user: dict = Depends(require_client)
+):
+    res = await db.addon_requests.delete_one({
+        "id": req_id,
+        "client_id": user["id"]
+    })
+
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    return {"ok": True}
 
 
 @api.get("/admin/addons/requests")
