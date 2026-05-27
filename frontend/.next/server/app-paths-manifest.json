@@ -1,7 +1,7 @@
 {
+  "/page": "app/page.js",
   "/client-portal/login/page": "app/client-portal/login/page.js",
-  "/client-portal/admin/addons/page": "app/client-portal/admin/addons/page.js",
-  "/client-portal/client/addons/page": "app/client-portal/client/addons/page.js",
   "/client-portal/client/page": "app/client-portal/client/page.js",
-  "/client-portal/admin/page": "app/client-portal/admin/page.js"
+  "/client-portal/admin/page": "app/client-portal/admin/page.js",
+  "/client-portal/admin/clients/page": "app/client-portal/admin/clients/page.js"
 }

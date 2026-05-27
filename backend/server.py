@@ -218,16 +218,38 @@ class ClientProfileUpdate(BaseModel):
 @api.post("/auth/login")
 async def login(payload: LoginIn, response: Response):
     email = payload.email.lower().strip()
+
     user = await db.users.find_one({"email": email})
+
     if not user or not verify_password(payload.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
     if user.get("active") is False:
         raise HTTPException(status_code=403, detail="Account disabled")
-    token = create_access_token(user["id"], user["email"], user["role"])
-    set_auth_cookie(response, token)
-    safe = doc_clean(dict(user))
-    return {"token": token, "user": safe}
 
+    token = create_access_token(user["id"], user["email"], user["role"])
+
+    login_time = now_iso()
+
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {
+                "last_login": login_time
+            }
+        }
+    )
+
+    set_auth_cookie(response, token)
+
+    safe = doc_clean(dict(user))
+    safe["last_login"] = login_time
+
+    updated_user = await db.users.find_one({"id": user["id"]})
+
+    print(updated_user)
+
+    return {"token": token, "user": safe}
 
 @api.post("/auth/logout")
 async def logout(response: Response):

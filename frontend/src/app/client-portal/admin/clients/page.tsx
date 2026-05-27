@@ -24,6 +24,7 @@ interface Client {
   services?: string[];
   notes?: string;
   active?: boolean;
+  last_login?: string;
 }
 interface Service { id: string; name: string }
 interface Credentials { email: string; password: string; name: string }
@@ -206,10 +207,13 @@ export default function AdminClientsPage() {
                   <th className="text-left px-4 py-3">Company</th>
                   <th className="text-left px-4 py-3">Services</th>
                   <th className="text-left px-4 py-3">Status</th>
+                  <th className="text-left px-4 py-3">Last Login</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
+
+                
                 {clients.map((c) => (
                   <tr key={c.id} className="border-t border-zinc-100 hover:bg-zinc-50/50">
                     <td className="px-4 py-3">
@@ -233,6 +237,12 @@ export default function AdminClientsPage() {
                     <td className="px-4 py-3">
                       <Pill status={c.active === false ? "closed" : "open"} />
                     </td>
+
+                    <td className="px-4 py-3 text-zinc-500 text-xs">
+  {c.last_login
+    ? new Date(c.last_login).toLocaleString()
+    : "Never"}
+</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
                         <button
@@ -268,6 +278,7 @@ export default function AdminClientsPage() {
           </div>
         </div>
       )}
+      
 
       <Modal
         open={creating}

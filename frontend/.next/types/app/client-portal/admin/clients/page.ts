@@ -1,8 +1,8 @@
-// File: C:\Users\sreer\Client-onboard-rebild\frontend\src\app\client-portal\admin\addons\page.tsx
-import * as entry from '../../../../../../src/app/client-portal/admin/addons/page.js'
+// File: C:\Users\sreer\Client-onboard-rebild\frontend\src\app\client-portal\admin\clients\page.tsx
+import * as entry from '../../../../../../src/app/client-portal/admin/clients/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../../../src/app/client-portal/admin/addons/page.js')
+type TEntry = typeof import('../../../../../../src/app/client-portal/admin/clients/page.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

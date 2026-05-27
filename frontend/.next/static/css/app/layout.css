@@ -1409,6 +1409,9 @@ video {
 .text-\[11px\]{
   font-size: 11px;
 }
+.text-\[20px\]{
+  font-size: 20px;
+}
 .text-base{
   font-size: 1rem;
   line-height: 1.5rem;
@@ -1428,9 +1431,6 @@ video {
 .text-xs{
   font-size: 0.75rem;
   line-height: 1rem;
-}
-.text-\[20px\]{
-  font-size: 20px;
 }
 .font-black{
   font-weight: 900;
