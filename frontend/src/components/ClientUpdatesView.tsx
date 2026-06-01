@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
-import { PageHeader, Loader, EmptyState, Pill , Modal } from "@/components/primitives";
+import { PageHeader, Loader, EmptyState, Pill , Modal, Modalup } from "@/components/primitives";
 import { BellRing, FileText } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 
 interface Update {
   id: string;
@@ -13,21 +14,34 @@ interface Update {
   created_at: string;
 }
 
-export default function ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
+export default function   ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
   const [updates, setUpdates] = useState<Update[] | null>(null);
   const [selectedUpdate, setSelectedUpdate] = useState<any | null>(null);
   const [attachmentUrl, setAttachmentUrl] = useState("");
 const [attachmentName, setAttachmentName] = useState("");
 
+const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   useEffect(() => {
     api.get<Update[]>("/client/updates").then((r) => setUpdates(r.data || []));
   }, []);
 
   if (!updates) return <Loader />;
 
-  const filtered = filterCategory
-    ? updates.filter((u) => (u.category || "").toLowerCase() === filterCategory.toLowerCase())
-    : updates;
+  const filtered = (
+  filterCategory
+    ? updates.filter(
+        (u) =>
+          (u.category || "").toLowerCase() ===
+          filterCategory.toLowerCase()
+      )
+    : updates
+).sort((a, b) =>
+  sortOrder === "newest"
+    ? new Date(b.created_at).getTime() -
+      new Date(a.created_at).getTime()
+    : new Date(a.created_at).getTime() -
+      new Date(b.created_at).getTime()
+);
 
   const isReports = filterCategory === "Report";
 
@@ -42,6 +56,20 @@ const [attachmentName, setAttachmentName] = useState("");
             : "Everything new from your Rebild team."
         }
       />
+
+      <div className="flex justify-end mb-6">
+  <button
+    onClick={() =>
+      setSortOrder((prev) =>
+        prev === "newest" ? "oldest" : "newest"
+      )
+    }
+    className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl border border-zinc-200 hover:border-[#F77418]/40 hover:bg-zinc-50 transition"
+  >
+    <ArrowUpDown className="h-4 w-4" />
+    Sort by {sortOrder === "newest" ? "Newest" : "Oldest"}
+  </button>
+</div>
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -100,7 +128,7 @@ const [attachmentName, setAttachmentName] = useState("");
         
       )}
      
-     <Modal
+     <Modalup
   open={!!selectedUpdate}
   onClose={() => setSelectedUpdate(null)}
   title={selectedUpdate?.title || "Update"}
@@ -130,7 +158,7 @@ const [attachmentName, setAttachmentName] = useState("");
       
     </div>
   )}
-</Modal>
+</Modalup>
       
     </div>
   );

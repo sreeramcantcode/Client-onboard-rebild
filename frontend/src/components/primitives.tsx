@@ -217,6 +217,53 @@ export const Select = React.forwardRef<
 ));
 Select.displayName = "Select";
 
+export function Modalup({
+  open,
+  onClose,
+  title,
+  children,
+  size = "md",
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  size?: "sm" | "md" | "lg" | "xl";
+}) {
+  if (!open) return null;
+  const sizes: Record<string, string> = {
+    sm: "max-w-md",
+    md: "max-w-3xl",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className={cn(
+          "relative bg-white border border-zinc-200 rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto",
+          sizes[size]
+        )}
+        data-testid="modal"
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 sticky top-0 bg-white z-10">
+          <div className="font-display font-bold text-xl text-zinc-900">{title}</div>
+          <button
+            onClick={onClose}
+            className="text-zinc-500 hover:text-zinc-900 text-xl leading-none"
+            data-testid="modal-close"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 export function Modal({
   open,
   onClose,
