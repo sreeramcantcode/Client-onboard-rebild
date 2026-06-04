@@ -12,6 +12,9 @@ interface Update {
   body: string;
   category?: string;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  
 }
 
 export default function   ClientUpdatesView({ filterCategory }: { filterCategory?: string }) {
