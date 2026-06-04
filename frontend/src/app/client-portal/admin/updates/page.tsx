@@ -31,7 +31,14 @@ export default function AdminUpdatesPage() {
   const [updates, setUpdates] = useState<Update[] | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ title: "", body: "", client_id: "", category: "Update" });
+  const [form, setForm] = useState({
+    title: "",
+    body: "",
+    client_id: "",
+    category: "Update",
+    attachment_url: "",
+    attachment_name: "",
+});
   const [error, setError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
