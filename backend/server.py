@@ -1,11 +1,11 @@
 from dotenv import load_dotenv
 from pathlib import Path
 
-
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / ".env")
+load_dotenv(ROOT_DIR / ".env")  # ← MUST be before anything reads env vars
 
 import os
+import tempfile
 import uuid
 import secrets
 import logging
@@ -14,12 +14,20 @@ from typing import List, Optional, Literal
 
 import bcrypt
 import jwt
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status
+import cloudinary
+import cloudinary.uploader
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status, UploadFile, File
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
-
+# ← cloudinary config AFTER load_dotenv and imports
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
+    api_key=os.environ.get("CLOUDINARY_API_KEY", ""),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET", ""),
+    secure=True,
+)
 # ---------------- Config ----------------
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_MINUTES = 60 * 12  # 12 hours
@@ -187,8 +195,10 @@ class InvoiceIn(BaseModel):
 class UpdateIn(BaseModel):
     title: str
     body: str
-    client_id: Optional[str] = None  # None = broadcast to all clients
-    category: str = "Update"  # Update | Report | Announcement
+    client_id: Optional[str] = None
+    category: str = "Update"
+    attachment_url: Optional[str] = None
+    attachment_name: Optional[str] = None
 
 
 class TicketIn(BaseModel):
@@ -484,6 +494,8 @@ async def create_update(payload: UpdateIn, _: dict = Depends(require_admin)):
         "client_id": payload.client_id,  # None = broadcast
         "category": payload.category,
         "created_at": now_iso(),
+        "attachment_url": payload.attachment_url or None,
+        "attachment_name": payload.attachment_name or None,
     }
     await db.updates.insert_one(doc)
     doc.pop("_id", None)
@@ -510,6 +522,56 @@ async def create_update(payload: UpdateIn, _: dict = Depends(require_admin)):
             ]
         )
     return doc
+
+
+
+@api.post("/admin/uploads")
+async def upload_file(
+    file: UploadFile = File(...),
+    _: dict = Depends(require_admin)
+
+    
+):  
+    print("UPLOAD ENDPOINT HIT")
+    MAX_SIZE = 10 * 1024 * 1024
+    content = await file.read()
+
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=413, detail="File too large (max 10MB)")
+
+    allowed_types = {
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=415, detail="Only PDF and Word files allowed")
+
+    suffix = os.path.splitext(file.filename)[-1] or ".pdf"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        result = cloudinary.uploader.upload(
+            tmp_path,
+            folder="rebild/reports",
+            resource_type="raw",
+            public_id=str(uuid.uuid4()),
+            use_filename=False,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+    finally:
+        os.remove(tmp_path)
+
+    return {
+        "url": result["secure_url"],
+        "filename": file.filename,
+    }
+   
+
+
 
 
 @api.get("/admin/updates")
@@ -859,6 +921,7 @@ async def on_startup():
     await db.services.create_index("id", unique=True)
     await db.addons.create_index("id", unique=True)
     await db.notifications.create_index("user_id")
+    await db.file_uploads.create_index("id", unique=True)
 
     # seed admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@rebild.com").lower().strip()
