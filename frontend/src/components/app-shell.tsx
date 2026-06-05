@@ -50,6 +50,7 @@ const CLIENT_NAV: NavItem[] = [
   { href: `${PORTAL_BASE}/client/reports`, label: "Reports", icon: FileText },
   { href: `${PORTAL_BASE}/client/support`, label: "Support", icon: LifeBuoy },
   { href: `${PORTAL_BASE}/client/profile`, label: "Profile", icon: UserIcon },
+  { href: `${PORTAL_BASE}/client/checklists`, label: "Checklists", icon: ListChecks },
 ];
 
 const ADMIN_NAV: NavItem[] = [

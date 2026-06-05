@@ -158,6 +158,18 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
         {selectedUpdate.body}
       </div>
 
+      {selectedUpdate.attachment_url && (
+  
+    <a href={selectedUpdate.attachment_url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition"
+  >
+    <FileText className="w-3.5 h-3.5 text-[#F77418]" />
+    {selectedUpdate.attachment_name || "View attachment"}
+  </a>
+)}
+
       
     </div>
   )}

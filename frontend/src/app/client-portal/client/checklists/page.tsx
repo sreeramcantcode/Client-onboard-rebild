@@ -48,7 +48,7 @@ export default function ClientChecklistsPage() {
             const done = cl.items.filter((i) => i.checked).length;
             const pct = cl.items.length ? Math.round((done / cl.items.length) * 100) : 0;
             return (
-              <div key={cl.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition">
+              <div key={cl.id} className="border space-y-4 border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition">
                 <div className="flex items-center justify-between mb-1">
                   <div className="font-display font-bold text-lg text-zinc-900">{cl.title}</div>
                   <span className="text-xs font-medium text-[#F77418]">{done}/{cl.items.length} done</span>

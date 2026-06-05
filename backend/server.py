@@ -595,8 +595,6 @@ async def create_update(payload: UpdateIn, _: dict = Depends(require_admin)):
 async def upload_file(
     file: UploadFile = File(...),
     _: dict = Depends(require_admin)
-
-    
 ):  
     print("UPLOAD ENDPOINT HIT")
     MAX_SIZE = 10 * 1024 * 1024
@@ -631,12 +629,17 @@ async def upload_file(
     finally:
         os.remove(tmp_path)
 
+    raw_url = result["secure_url"]
+
+    if file.content_type == "application/pdf":
+        final_url = raw_url.replace("/raw/upload/", "/raw/upload/fl_inline/")
+    else:
+        final_url = raw_url
+
     return {
-        "url": result["secure_url"],
+        "url": final_url,
         "filename": file.filename,
     }
-   
-
 
 
 
