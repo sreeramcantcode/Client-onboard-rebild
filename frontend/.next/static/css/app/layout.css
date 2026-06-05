@@ -895,6 +895,9 @@ video {
 .animate-spin-slow{
   animation: spinSlow 1s linear infinite;
 }
+.cursor-default{
+  cursor: default;
+}
 .cursor-pointer{
   cursor: pointer;
 }

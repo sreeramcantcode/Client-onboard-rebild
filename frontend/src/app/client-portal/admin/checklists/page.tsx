@@ -102,11 +102,9 @@ export default function AdminChecklistsPage() {
                     <div className="font-display font-bold text-lg text-zinc-900 mb-3">{cl.title}</div>
                     <div className="space-y-2">
                       {cl.items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-3 cursor-pointer group"
-                          onClick={() => toggle(cl.id, item.id, !item.checked)}
-                        >
+                        <div key={item.id} className={`flex items-center gap-3 group ${!item.checked ? "cursor-pointer" : "cursor-default"}`}
+                        onClick={() => !item.checked && toggle(cl.id, item.id, true)}
+>
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
                             item.checked
                               ? "bg-[#F77418] border-[#F77418]"
