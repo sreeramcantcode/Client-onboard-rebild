@@ -223,6 +223,17 @@ class ClientProfileUpdate(BaseModel):
     name: Optional[str] = None
     company: Optional[str] = None
 
+class ChecklistItemIn(BaseModel):
+    text: str
+
+class ChecklistIn(BaseModel):
+    title: str
+    client_id: Optional[str] = None  # None = visible to all clients
+    items: List[ChecklistItemIn]
+
+class ToggleItemIn(BaseModel):
+    checked: bool
+
 
 # ---------------- Auth Endpoints ----------------
 @api.post("/auth/login")
@@ -271,6 +282,61 @@ async def logout(response: Response):
 async def me(user: dict = Depends(get_current_user)):
     return user
 
+
+# ---------------- Checklists ----------------
+@api.post("/admin/checklists")
+async def create_checklist(payload: ChecklistIn, _: dict = Depends(require_admin)):
+    items = [
+        {"id": str(uuid.uuid4()), "text": it.text, "checked": False}
+        for it in payload.items
+    ]
+    doc = {
+        "id": str(uuid.uuid4()),
+        "title": payload.title,
+        "client_id": payload.client_id,
+        "items": items,
+        "created_at": now_iso(),
+    }
+    await db.checklists.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@api.get("/admin/checklists")
+async def admin_list_checklists(_: dict = Depends(require_admin)):
+    items = await db.checklists.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return items
+
+
+@api.delete("/admin/checklists/{checklist_id}")
+async def delete_checklist(checklist_id: str, _: dict = Depends(require_admin)):
+    await db.checklists.delete_one({"id": checklist_id})
+    return {"ok": True}
+
+
+@api.get("/client/checklists")
+async def client_list_checklists(user: dict = Depends(require_client)):
+    items = await db.checklists.find(
+        {"$or": [{"client_id": user["id"]}, {"client_id": None}]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    return items
+
+
+@api.patch("/checklists/{checklist_id}/items/{item_id}")
+async def toggle_checklist_item(
+    checklist_id: str,
+    item_id: str,
+    payload: ToggleItemIn,
+    user: dict = Depends(get_current_user),
+):
+    checklist = await db.checklists.find_one({"id": checklist_id})
+    if not checklist:
+        raise HTTPException(status_code=404, detail="Checklist not found")
+    await db.checklists.update_one(
+        {"id": checklist_id, "items.id": item_id},
+        {"$set": {"items.$.checked": payload.checked}}
+    )
+    return {"ok": True}
 
 # ---------------- Admin: Clients ----------------
 @api.get("/admin/clients")
@@ -922,6 +988,7 @@ async def on_startup():
     await db.addons.create_index("id", unique=True)
     await db.notifications.create_index("user_id")
     await db.file_uploads.create_index("id", unique=True)
+    await db.checklists.create_index("id", unique=True)
 
     # seed admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@rebild.com").lower().strip()

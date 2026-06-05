@@ -31,10 +31,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/client-portal/admin/layout.js"
     ],
-    "/client-portal/admin/updates/page": [
+    "/client-portal/admin/checklists/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/admin/updates/page.js"
+      "static/chunks/app/client-portal/admin/checklists/page.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
