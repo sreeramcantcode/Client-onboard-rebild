@@ -33,7 +33,7 @@ export default function ClientChecklistsPage() {
   };
 
   return (
-    <div className="p-6 md:p-10">
+    <div className="p-6 md:p-9">
       <PageHeader
         eyebrow="Tasks"
         title="Checklists"
