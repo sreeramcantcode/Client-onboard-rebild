@@ -8,7 +8,7 @@ import {
 } from "@/components/primitives";
 import { CheckSquare, Plus, Trash2, X } from "lucide-react";
 
-interface ChecklistItem { id: string; text: string; checked: boolean }
+interface ChecklistItem { id: string; text: string; checked: boolean ;checked_by?: string | null  }
 interface Checklist {
   id: string; title: string; client_id: string | null;
   items: ChecklistItem[]; created_at: string;
@@ -116,11 +116,18 @@ export default function AdminChecklistsPage() {
                               </svg>
                             )}
                           </div>
-                          <span className={`text-sm transition-colors ${
-                            item.checked ? "line-through text-zinc-400" : "text-zinc-700"
-                          }`}>
-                            {item.text}
-                          </span>
+                          <div className="flex items-center gap-2 flex-1">
+  <span className={`text-sm transition-colors ${
+    item.checked ? "line-through text-zinc-400" : "text-zinc-700 group-hover:text-zinc-900"
+  }`}>
+    {item.text}
+  </span>
+  {item.checked && item.checked_by && (
+    <span className="text-xs text-zinc-400 shrink-0">
+      ✓ {item.checked_by}
+    </span>
+  )}
+</div>
                         </div>
                       ))}
                     </div>
