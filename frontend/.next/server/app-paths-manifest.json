@@ -1,8 +1,8 @@
 {
   "/client-portal/login/page": "app/client-portal/login/page.js",
-  "/client-portal/client/updates/page": "app/client-portal/client/updates/page.js",
+  "/client-portal/client/reports/page": "app/client-portal/client/reports/page.js",
   "/client-portal/client/page": "app/client-portal/client/page.js",
-  "/client-portal/client/checklists/page": "app/client-portal/client/checklists/page.js",
-  "/client-portal/admin/checklists/page": "app/client-portal/admin/checklists/page.js",
-  "/client-portal/admin/page": "app/client-portal/admin/page.js"
+  "/client-portal/admin/page": "app/client-portal/admin/page.js",
+  "/client-portal/admin/updates/page": "app/client-portal/admin/updates/page.js",
+  "/client-portal/client/updates/page": "app/client-portal/client/updates/page.js"
 }

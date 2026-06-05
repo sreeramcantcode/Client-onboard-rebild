@@ -1,8 +1,9 @@
+
 from dotenv import load_dotenv
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / ".env")  # ← MUST be before anything reads env vars
+load_dotenv(ROOT_DIR / ".env")
 
 import os
 import tempfile
@@ -14,20 +15,18 @@ from typing import List, Optional, Literal
 
 import bcrypt
 import jwt
-import cloudinary
-import cloudinary.uploader
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status, UploadFile, File
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from supabase import create_client, Client
 
-# ← cloudinary config AFTER load_dotenv and imports
-cloudinary.config(
-    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
-    api_key=os.environ.get("CLOUDINARY_API_KEY", ""),
-    api_secret=os.environ.get("CLOUDINARY_API_SECRET", ""),
-    secure=True,
+supabase: Client = create_client(
+    os.environ.get("SUPABASE_URL", ""),
+    os.environ.get("SUPABASE_ANON_KEY", ""),
 )
+
+
 # ---------------- Config ----------------
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_MINUTES = 60 * 12  # 12 hours
@@ -595,8 +594,7 @@ async def create_update(payload: UpdateIn, _: dict = Depends(require_admin)):
 async def upload_file(
     file: UploadFile = File(...),
     _: dict = Depends(require_admin)
-):  
-    print("UPLOAD ENDPOINT HIT")
+):
     MAX_SIZE = 10 * 1024 * 1024
     content = await file.read()
 
@@ -611,33 +609,24 @@ async def upload_file(
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=415, detail="Only PDF and Word files allowed")
 
+    file_id = str(uuid.uuid4())
     suffix = os.path.splitext(file.filename)[-1] or ".pdf"
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        tmp.write(content)
-        tmp_path = tmp.name
+    storage_path = f"{file_id}{suffix}"
 
     try:
-        result = cloudinary.uploader.upload(
-            tmp_path,
-            folder="rebild/reports",
-            resource_type="raw",
-            public_id=str(uuid.uuid4()),
-            use_filename=False,
+        supabase.storage.from_("reports").upload(
+            path=storage_path,
+            file=content,
+            file_options={"content-type": file.content_type}
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
-    finally:
-        os.remove(tmp_path)
 
-    raw_url = result["secure_url"]
-
-    if file.content_type == "application/pdf":
-        final_url = raw_url.replace("/raw/upload/", "/raw/upload/fl_inline/")
-    else:
-        final_url = raw_url
+    # get public URL — works immediately since bucket is public
+    public_url = supabase.storage.from_("reports").get_public_url(storage_path)
 
     return {
-        "url": final_url,
+        "url": public_url,
         "filename": file.filename,
     }
 
@@ -990,7 +979,6 @@ async def on_startup():
     await db.services.create_index("id", unique=True)
     await db.addons.create_index("id", unique=True)
     await db.notifications.create_index("user_id")
-    await db.file_uploads.create_index("id", unique=True)
     await db.checklists.create_index("id", unique=True)
 
     # seed admin
