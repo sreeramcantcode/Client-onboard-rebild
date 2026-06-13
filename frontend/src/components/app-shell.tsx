@@ -24,7 +24,8 @@ import {
   X,
   Search,
   BellDot,
-  ListChecks
+  ListChecks,
+  Package2Icon
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import RebildLogo from "@/components/rebild-logo";
@@ -50,7 +51,8 @@ const CLIENT_NAV: NavItem[] = [
   { href: `${PORTAL_BASE}/client/reports`, label: "Reports", icon: FileText },
   { href: `${PORTAL_BASE}/client/support`, label: "Support", icon: LifeBuoy },
   { href: `${PORTAL_BASE}/client/profile`, label: "Profile", icon: UserIcon },
-  { href: `${PORTAL_BASE}/client/checklists`, label: "Checklists", icon: ListChecks },
+  { href: `${PORTAL_BASE}/client/checklists`, label: "Checklists", icon: ListChecks},
+  { href: `${PORTAL_BASE}/client/documents`, label: "Documents", icon: FileText },
 ];
 
 const ADMIN_NAV: NavItem[] = [
@@ -63,6 +65,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: `${PORTAL_BASE}/admin/tickets`, label: "Tickets", icon: Ticket },
   { href: `${PORTAL_BASE}/admin/settings`, label: "Settings", icon: Settings },
   { href: `${PORTAL_BASE}/admin/checklists`, label: "Checklists", icon: ListChecks },
+  { href: `${PORTAL_BASE}/admin/documents`, label: "Documents", icon: Package2Icon },
 ];
 
 interface Notification {

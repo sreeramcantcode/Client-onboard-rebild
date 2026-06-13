@@ -25,7 +25,11 @@ export default function ClientChecklistsPage() {
       prev!.map((cl) =>
         cl.id !== checklistId ? cl : {
           ...cl,
-          items: cl.items.map((it) => it.id === itemId ? { ...it, checked } : it),
+          items: cl.items.map((it) => 
+  it.id === itemId 
+    ? { ...it, checked, checked_by: checked ? "You" : null } 
+    : it
+),
         }
       )
     );

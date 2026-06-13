@@ -31,6 +31,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/client-portal/client/layout.js"
     ],
+    "/client-portal/client/documents/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/client-portal/client/documents/page.js"
+    ],
     "/client-portal/admin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -41,30 +46,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/client-portal/admin/layout.js"
     ],
-    "/client-portal/admin/settings/page": [
+    "/client-portal/admin/documents/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/admin/settings/page.js"
-    ],
-    "/client-portal/admin/services/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/admin/services/page.js"
-    ],
-    "/client-portal/admin/updates/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/admin/updates/page.js"
-    ],
-    "/client-portal/client/reports/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/client/reports/page.js"
-    ],
-    "/client-portal/client/updates/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/client/updates/page.js"
+      "static/chunks/app/client-portal/admin/documents/page.js"
     ]
   }
 }

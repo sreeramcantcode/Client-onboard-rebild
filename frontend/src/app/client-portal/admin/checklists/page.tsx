@@ -62,10 +62,10 @@ export default function AdminChecklistsPage() {
     await api.delete(`/admin/checklists/${id}`);
     load();
   };
-
+  
   const toggle = async (checklistId: string, itemId: string, checked: boolean) => {
     await api.patch(`/checklists/${checklistId}/items/${itemId}`, { checked });
-    load();
+    await load();
   };
 
   return (

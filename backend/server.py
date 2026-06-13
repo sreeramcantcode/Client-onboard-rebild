@@ -158,6 +158,11 @@ class UpdateClientIn(BaseModel):
     attachment_url: Optional[str] = None
     attachment_name: Optional[str] = None
 
+class DocumentIn(BaseModel):
+    title: str
+    client_id: Optional[str] = None  # None = visible to all clients
+    attachment_url: str
+    attachment_name: str
 
 class ResetPasswordIn(BaseModel):
     password: Optional[str] = None  # if not provided, generated
@@ -331,11 +336,54 @@ async def toggle_checklist_item(
     checklist = await db.checklists.find_one({"id": checklist_id})
     if not checklist:
         raise HTTPException(status_code=404, detail="Checklist not found")
+
+    checked_by = None
+    if payload.checked:
+        checked_by = "Rebild Team" if user.get("role") == "admin" else user.get("name", "Client")
+
     await db.checklists.update_one(
         {"id": checklist_id, "items.id": item_id},
-        {"$set": {"items.$.checked": payload.checked}}
+        {"$set": {
+            "items.$.checked": payload.checked,
+            "items.$.checked_by": checked_by,
+        }}
     )
     return {"ok": True}
+
+# ---------------- Documents ----------------
+@api.post("/admin/documents")
+async def create_document(payload: DocumentIn, _: dict = Depends(require_admin)):
+    doc = {
+        "id": str(uuid.uuid4()),
+        "title": payload.title,
+        "client_id": payload.client_id,
+        "attachment_url": payload.attachment_url,
+        "attachment_name": payload.attachment_name,
+        "created_at": now_iso(),
+    }
+    await db.documents.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@api.get("/admin/documents")
+async def admin_list_documents(_: dict = Depends(require_admin)):
+    items = await db.documents.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return items
+
+
+@api.delete("/admin/documents/{doc_id}")
+async def delete_document(doc_id: str, _: dict = Depends(require_admin)):
+    await db.documents.delete_one({"id": doc_id})
+    return {"ok": True}
+
+
+@api.get("/client/documents")
+async def client_list_documents(user: dict = Depends(require_client)):
+    items = await db.documents.find(
+        {"$or": [{"client_id": user["id"]}, {"client_id": None}]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    return items
 
 # ---------------- Admin: Clients ----------------
 @api.get("/admin/clients")
@@ -980,6 +1028,7 @@ async def on_startup():
     await db.addons.create_index("id", unique=True)
     await db.notifications.create_index("user_id")
     await db.checklists.create_index("id", unique=True)
+    await db.documents.create_index("id", unique=True)
 
     # seed admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@rebild.com").lower().strip()
