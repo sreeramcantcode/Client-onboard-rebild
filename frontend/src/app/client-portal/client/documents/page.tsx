@@ -15,6 +15,28 @@ interface Document {
 
 export default function ClientDocumentsPage() {
   const [documents, setDocuments] = useState<Document[] | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+const [loadingPreview, setLoadingPreview] = useState(false);
+
+const openHtmlPreview = async (url: string) => {
+  setLoadingPreview(true);
+  try {
+    const res = await fetch(url);
+    const html = await res.text();
+    const blob = new Blob([html], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+    setIframeUrl(blobUrl);
+  } catch {
+    window.open(url, "_blank");
+  } finally {
+    setLoadingPreview(false);
+  }
+};
+
+const closePreview = () => {
+  if (iframeUrl) URL.revokeObjectURL(iframeUrl);
+  setIframeUrl(null);
+};
 
   useEffect(() => {
     api.get<Document[]>("/client/documents").then((r) => setDocuments(r.data || []));
@@ -35,8 +57,15 @@ export default function ClientDocumentsPage() {
       ) : (
         <div className="space-y-3">
           {documents.map((doc) => {
-            const isViewable = doc.attachment_name?.toLowerCase().endsWith(".pdf") || 
-                   doc.attachment_name?.toLowerCase().endsWith(".html");
+            const isHtml = doc.attachment_name?.toLowerCase().endsWith(".html");
+            const isPdfOrImage =
+              doc.attachment_name?.toLowerCase().endsWith(".pdf") ||
+              doc.attachment_name?.toLowerCase().endsWith(".jpg") ||
+              doc.attachment_name?.toLowerCase().endsWith(".jpeg") ||
+              doc.attachment_name?.toLowerCase().endsWith(".png") ||
+              doc.attachment_name?.toLowerCase().endsWith(".gif") ||
+              doc.attachment_name?.toLowerCase().endsWith(".webp");
+
             return (
               <div key={doc.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-[#F77418]/30 hover:shadow-sm transition">
                 <div className="flex items-center justify-between gap-3">
@@ -53,9 +82,21 @@ export default function ClientDocumentsPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    {isViewable && (
-                      
-                      <a href={doc.attachment_url}
+                    {/* HTML → iframe modal */}
+                    {isHtml && (
+  <button
+    onClick={() => openHtmlPreview(doc.attachment_url)}
+    disabled={loadingPreview}
+    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
+  >
+    <Eye className="w-3.5 h-3.5" />
+    {loadingPreview ? "Loading..." : "View"}
+  </button>
+)}
+                    {/* PDF / images → open in new tab */}
+                    {isPdfOrImage && (
+                      <a
+                        href={doc.attachment_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
@@ -64,8 +105,9 @@ export default function ClientDocumentsPage() {
                         View
                       </a>
                     )}
-                    
-                     <a href={doc.attachment_url}
+
+                     <a
+                      href={doc.attachment_url}
                       download={doc.attachment_name}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F77418] hover:bg-[#e06810] text-white transition"
                     >
@@ -77,6 +119,27 @@ export default function ClientDocumentsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* HTML preview modal */}
+      {iframeUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+              <span className="font-semibold text-zinc-900 text-sm">Preview</span>
+              <button onClick={closePreview}
+  className="text-zinc-400 hover:text-zinc-700 transition text-lg leading-none"
+>
+  ✕
+</button>
+            </div>
+            <iframe
+              src={iframeUrl}
+              className="flex-1 w-full"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          </div>
         </div>
       )}
     </div>

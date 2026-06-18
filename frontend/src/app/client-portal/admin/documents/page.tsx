@@ -202,7 +202,7 @@ export default function AdminDocumentsPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.doc,.docx,.html,.jpg,.jpeg,.png,.gif,.webp,.xlsx,.xls,.csv,.txt,text/html,image/*"
                   className="hidden"
                   onChange={handleFileChange}
                 />

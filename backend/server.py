@@ -645,16 +645,27 @@ async def upload_file(
 ):
     MAX_SIZE = 10 * 1024 * 1024
     content = await file.read()
+    print("FILE CONTENT TYPE:", file.content_type)
 
     if len(content) > MAX_SIZE:
         raise HTTPException(status_code=413, detail="File too large (max 10MB)")
 
     allowed_types = {
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/html"
-    }
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/html",
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/csv",
+    "text/plain",
+}
+
+
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=415, detail="Only PDF and Word files allowed")
 
