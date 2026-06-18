@@ -653,6 +653,7 @@ async def upload_file(
         "application/pdf",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/html"
     }
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=415, detail="Only PDF and Word files allowed")

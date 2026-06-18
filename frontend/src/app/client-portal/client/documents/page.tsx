@@ -35,7 +35,8 @@ export default function ClientDocumentsPage() {
       ) : (
         <div className="space-y-3">
           {documents.map((doc) => {
-            const isPdf = doc.attachment_name?.toLowerCase().endsWith(".pdf");
+            const isViewable = doc.attachment_name?.toLowerCase().endsWith(".pdf") || 
+                   doc.attachment_name?.toLowerCase().endsWith(".html");
             return (
               <div key={doc.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-[#F77418]/30 hover:shadow-sm transition">
                 <div className="flex items-center justify-between gap-3">
@@ -52,7 +53,7 @@ export default function ClientDocumentsPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    {isPdf && (
+                    {isViewable && (
                       
                       <a href={doc.attachment_url}
                         target="_blank"
