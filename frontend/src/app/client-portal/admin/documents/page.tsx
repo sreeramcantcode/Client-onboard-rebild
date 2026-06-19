@@ -5,7 +5,7 @@ import api, { formatApiError } from "@/lib/api";
 import {
   PageHeader, Loader, EmptyState, PrimaryButton, Modal, Input, Select,
 } from "@/components/primitives";
-import { FileText, Plus, Trash2, Paperclip, X, Loader2 } from "lucide-react";
+import { FileText, Plus, Trash2, Paperclip, X, Loader2, Eye, Download } from "lucide-react";
 
 interface Document {
   id: string;
@@ -27,6 +27,10 @@ export default function AdminDocumentsPage() {
   const [uploadError, setUploadError] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ← preview state
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   const load = async () => {
     const [d, c] = await Promise.all([
@@ -111,6 +115,27 @@ export default function AdminDocumentsPage() {
     load();
   };
 
+  // ← preview handlers
+  const openHtmlPreview = async (url: string) => {
+    setLoadingPreview(true);
+    try {
+      const res = await fetch(url);
+      const html = await res.text();
+      const blob = new Blob([html], { type: "text/html" });
+      const blobUrl = URL.createObjectURL(blob);
+      setIframeUrl(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (iframeUrl) URL.revokeObjectURL(iframeUrl);
+    setIframeUrl(null);
+  };
+
   return (
     <div className="p-6 md:p-10">
       <PageHeader
@@ -132,7 +157,17 @@ export default function AdminDocumentsPage() {
             const target = doc.client_id
               ? clients.find((c) => c.id === doc.client_id)?.name || "Client"
               : "All clients";
-            const isPdf = doc.attachment_name?.toLowerCase().endsWith(".pdf");
+            const name = doc.attachment_name?.toLowerCase() || "";
+            const isHtml = name.endsWith(".html");
+            const isPdfOrImage =
+              name.endsWith(".pdf") ||
+              name.endsWith(".jpg") ||
+              name.endsWith(".jpeg") ||
+              name.endsWith(".png") ||
+              name.endsWith(".gif") ||
+              name.endsWith(".webp");
+            const isViewable = isHtml || isPdfOrImage;
+
             return (
               <div key={doc.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition">
                 <div className="flex items-center justify-between gap-3">
@@ -148,14 +183,36 @@ export default function AdminDocumentsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
+                    {isHtml ? (
+                      <button
+                        onClick={() => openHtmlPreview(doc.attachment_url)}
+                        disabled={loadingPreview}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        {loadingPreview ? "Loading..." : "View"}
+                      </button>
+                    ) : isPdfOrImage ? (
+                        <a
+                        href={doc.attachment_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        View
+                      </a>
+                    ) : null}
+                      <a
                     
-                     <a href={doc.attachment_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
+                      href={doc.attachment_url}
+                      download={doc.attachment_name}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F77418] hover:bg-[#e06810] text-white transition"
                     >
-                      {isPdf ? "View" : "Download"}
+                      <Download className="w-3.5 h-3.5" />
+                      Download
                     </a>
+
                     <button onClick={() => remove(doc.id)} className="p-2 rounded-md hover:bg-red-50 text-red-600">
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -234,6 +291,28 @@ export default function AdminDocumentsPage() {
           </PrimaryButton>
         </div>
       </Modal>
+
+      {/* HTML preview modal */}
+      {iframeUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+              <span className="font-semibold text-zinc-900 text-sm">Preview</span>
+              <button
+                onClick={closePreview}
+                className="text-zinc-400 hover:text-zinc-700 transition text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={iframeUrl}
+              className="flex-1 w-full"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

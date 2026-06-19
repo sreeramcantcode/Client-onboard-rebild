@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { PageHeader, Loader, EmptyState, Pill , Modal, Modalup } from "@/components/primitives";
-import { BellRing, FileText } from "lucide-react";
+import { BellRing, FileText, Eye } from "lucide-react";
 import { ArrowUpDown } from "lucide-react";
 
 interface Update {
@@ -24,6 +24,11 @@ export default function   ClientUpdatesView({ filterCategory }: { filterCategory
 const [attachmentName, setAttachmentName] = useState("");
 
 const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+
+  // ← HTML preview state
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
   useEffect(() => {
     api.get<Update[]>("/client/updates").then((r) => setUpdates(r.data || []));
   }, []);
@@ -47,6 +52,27 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 );
 
   const isReports = filterCategory === "Report";
+
+  // ← HTML preview handlers
+  const openHtmlPreview = async (url: string) => {
+    setLoadingPreview(true);
+    try {
+      const res = await fetch(url);
+      const html = await res.text();
+      const blob = new Blob([html], { type: "text/html" });
+      const blobUrl = URL.createObjectURL(blob);
+      setIframeUrl(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (iframeUrl) URL.revokeObjectURL(iframeUrl);
+    setIframeUrl(null);
+  };
 
   return (
     <div className="p-7 md:p-10">
@@ -159,21 +185,53 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
       </div>
 
       {selectedUpdate.attachment_url && (
-  
-    <a href={selectedUpdate.attachment_url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition"
-  >
-    <FileText className="w-3.5 h-3.5 text-[#F77418]" />
-    {selectedUpdate.attachment_name || "View attachment"}
-  </a>
-)}
+        selectedUpdate.attachment_name?.toLowerCase().endsWith(".html") ? (
+          <button
+            onClick={() => openHtmlPreview(selectedUpdate.attachment_url)}
+            disabled={loadingPreview}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition"
+          >
+            <Eye className="w-3.5 h-3.5 text-[#F77418]" />
+            {loadingPreview ? "Loading..." : (selectedUpdate.attachment_name || "View attachment")}
+          </button>
+        ) : (
+          <a href={selectedUpdate.attachment_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition"
+        >
+          <FileText className="w-3.5 h-3.5 text-[#F77418]" />
+          {selectedUpdate.attachment_name || "View attachment"}
+        </a>
+        )
+      )}
 
       
     </div>
   )}
 </Modalup>
+
+      {/* HTML preview modal */}
+      {iframeUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+              <span className="font-semibold text-zinc-900 text-sm">Preview</span>
+              <button
+                onClick={closePreview}
+                className="text-zinc-400 hover:text-zinc-700 transition text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={iframeUrl}
+              className="flex-1 w-full"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          </div>
+        </div>
+      )}
       
     </div>
   );

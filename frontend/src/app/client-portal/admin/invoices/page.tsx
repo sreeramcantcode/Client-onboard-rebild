@@ -22,14 +22,20 @@ interface Invoice {
   number: string;
   client_name: string;
   total: number;
+  subtotal?: number;
+  tax?: number;
   status: string;
   created_at: string;
+  due_date?: string;
+  memo?: string;
+  items?: { description: string; qty: number; unit_price: number }[];
 }
 
 export default function AdminInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[] | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [creating, setCreating] = useState(false);
+   const [open, setOpen] = useState<Invoice | null>(null);
   const [form, setForm] = useState<{
     client_id: string;
     items: ItemForm[];
@@ -167,6 +173,13 @@ export default function AdminInvoicesPage() {
                             <CheckCircle2 className="w-4 h-4" />
                           </button>
                         )}
+                        <button
+                        onClick={() => setOpen(inv)}
+                        data-testid={`view-invoice-${inv.id}`}
+                        className="text-sm font-semibold text-[#F77418] hover:underline"
+                      >
+                        View
+                      </button>
                         <button
                           title="Delete"
                           onClick={() => remove(inv.id)}
@@ -312,6 +325,72 @@ export default function AdminInvoicesPage() {
           </PrimaryButton>
         </div>
       </Modal>
+      <Modal open={!!open} onClose={() => setOpen(null)} title={open?.number || "Invoice"} size="lg">
+  {open && (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-xs text-zinc-500">Billed to</div>
+          <div className="font-semibold text-zinc-900">{open.client_name}</div>
+        </div>
+        <Pill status={open.status} />
+      </div>
+
+      <div className="border border-zinc-200 rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
+            <tr>
+              <th className="text-left px-3 py-2">Description</th>
+              <th className="text-right px-3 py-2">Qty</th>
+              <th className="text-right px-3 py-2">Unit price</th>
+              <th className="text-right px-3 py-2">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(open as any).items?.map((it: any, i: number) => (
+              <tr key={i} className="border-t border-zinc-100">
+                <td className="px-3 py-2 text-zinc-900">{it.description}</td>
+                <td className="px-3 py-2 text-right text-zinc-600">{it.qty}</td>
+                <td className="px-3 py-2 text-right text-zinc-600">₹{it.unit_price?.toFixed(2)}</td>
+                <td className="px-3 py-2 text-right font-medium text-zinc-900">
+                  ₹{(it.qty * it.unit_price).toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="space-y-1.5 border-t border-zinc-100 pt-3">
+        <div className="flex justify-between text-sm">
+          <span className="text-zinc-500">Subtotal</span>
+          <span className="text-zinc-900">₹{(open as any).subtotal?.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-zinc-500">Tax</span>
+          <span className="text-zinc-900">₹{(open as any).tax?.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between font-display font-black text-xl text-zinc-900 pt-1">
+          <span>Total</span>
+          <span>₹{open.total?.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {(open as any).due_date && (
+        <div className="text-xs text-zinc-500">
+          Due date: {new Date((open as any).due_date).toLocaleDateString()}
+        </div>
+      )}
+
+      {(open as any).memo && (
+        <div className="text-xs text-zinc-500 border-t border-zinc-100 pt-3">
+          <span className="font-semibold text-zinc-700">Memo: </span>
+          {(open as any).memo}
+        </div>
+      )}
+    </div>
+  )}
+</Modal>
     </div>
   );
 }

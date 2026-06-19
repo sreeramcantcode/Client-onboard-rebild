@@ -45,14 +45,16 @@ interface NavItem {
 const CLIENT_NAV: NavItem[] = [
   { href: `${PORTAL_BASE}/client`, label: "Dashboard", icon: Home, exact: true },
   { href: `${PORTAL_BASE}/client/services`, label: "Services", icon: Briefcase },
-  { href: `${PORTAL_BASE}/client/addons`, label: "Add-ons", icon: Plus },
   { href: `${PORTAL_BASE}/client/invoices`, label: "Invoices", icon: Receipt },
   { href: `${PORTAL_BASE}/client/updates`, label: "Updates", icon: BellRing },
+  { href: `${PORTAL_BASE}/client/addons`, label: "Add-ons", icon: Plus },
+  { href: `${PORTAL_BASE}/client/checklists`, label: "Checklists", icon: ListChecks},
+  { href: `${PORTAL_BASE}/client/documents`, label: "My Responses", icon: FileText },
   { href: `${PORTAL_BASE}/client/reports`, label: "Reports", icon: FileText },
   { href: `${PORTAL_BASE}/client/support`, label: "Support", icon: LifeBuoy },
   { href: `${PORTAL_BASE}/client/profile`, label: "Profile", icon: UserIcon },
-  { href: `${PORTAL_BASE}/client/checklists`, label: "Checklists", icon: ListChecks},
-  { href: `${PORTAL_BASE}/client/documents`, label: "My Responses", icon: FileText },
+  
+  
 ];
 
 const ADMIN_NAV: NavItem[] = [
@@ -62,10 +64,12 @@ const ADMIN_NAV: NavItem[] = [
   { href: `${PORTAL_BASE}/admin/invoices`, label: "Invoices", icon: Receipt },
   { href: `${PORTAL_BASE}/admin/updates`, label: "Updates", icon: Megaphone },
   { href: `${PORTAL_BASE}/admin/addons`, label: "Add-ons", icon: Plus },
-  { href: `${PORTAL_BASE}/admin/tickets`, label: "Tickets", icon: Ticket },
-  { href: `${PORTAL_BASE}/admin/settings`, label: "Settings", icon: Settings },
   { href: `${PORTAL_BASE}/admin/checklists`, label: "Checklists", icon: ListChecks },
   { href: `${PORTAL_BASE}/admin/documents`, label: "Documents", icon: Package2Icon },
+  { href: `${PORTAL_BASE}/admin/tickets`, label: "Tickets", icon: Ticket },
+  { href: `${PORTAL_BASE}/admin/settings`, label: "Settings", icon: Settings },
+ 
+  
 ];
 
 interface Notification {

@@ -8,7 +8,7 @@ import {
 } from "@/components/primitives";
 import { CheckSquare, Plus, Trash2, X } from "lucide-react";
 
-interface ChecklistItem { id: string; text: string; checked: boolean ;checked_by?: string | null  }
+interface ChecklistItem { id: string; text: string; checked: boolean;checked_by?: string | null }
 interface Checklist {
   id: string; title: string; client_id: string | null;
   items: ChecklistItem[]; created_at: string;
@@ -62,10 +62,10 @@ export default function AdminChecklistsPage() {
     await api.delete(`/admin/checklists/${id}`);
     load();
   };
-  
+
   const toggle = async (checklistId: string, itemId: string, checked: boolean) => {
     await api.patch(`/checklists/${checklistId}/items/${itemId}`, { checked });
-    await load();
+    load();
   };
 
   return (
@@ -92,51 +92,54 @@ export default function AdminChecklistsPage() {
             const done = cl.items.filter((i) => i.checked).length;
             return (
               <div key={cl.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-xs text-zinc-500 font-mono">→ {target}</span>
-                      <span className="text-xs text-zinc-400">· {new Date(cl.created_at).toLocaleDateString()}</span>
-                      <span className="text-xs font-medium text-[#F77418]">{done}/{cl.items.length} done</span>
-                    </div>
-                    <div className="font-display font-bold text-lg text-zinc-900 mb-3">{cl.title}</div>
-                    <div className="space-y-2">
-                      {cl.items.map((item) => (
-                        <div key={item.id} className={`flex items-center gap-3 group ${!item.checked ? "cursor-pointer" : "cursor-default"}`}
-                        onClick={() => !item.checked && toggle(cl.id, item.id, true)}
->
-                          <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-                            item.checked
-                              ? "bg-[#F77418] border-[#F77418]"
-                              : "border-zinc-300 group-hover:border-[#F77418]"
-                          }`}>
-                            {item.checked && (
-                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-1">
-  <span className={`text-sm transition-colors ${
-    item.checked ? "line-through text-zinc-400" : "text-zinc-700 group-hover:text-zinc-900"
-  }`}>
-    {item.text}
-  </span>
-  {item.checked && item.checked_by && (
-    <span className="text-xs text-zinc-400 shrink-0">
-      ✓ {item.checked_by}
-    </span>
-  )}
+  <div className="flex items-start justify-between gap-3">
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 flex-wrap mb-1">
+        <span className="text-xs text-zinc-500 font-mono">→ {target}</span>
+        <span className="text-xs text-zinc-400">· {new Date(cl.created_at).toLocaleDateString()}</span>
+        <span className="text-xs font-medium text-[#F77418]">{done}/{cl.items.length} done</span>
+      </div>
+      <div className="font-display font-bold text-lg text-zinc-900 mb-3">{cl.title}</div>
+      <div className="space-y-2">
+        {cl.items.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => toggle(cl.id, item.id, !item.checked)}
+          >
+            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+              item.checked
+                ? "bg-[#F77418] border-[#F77418]"
+                : "border-zinc-300 group-hover:border-[#F77418]"
+            }`}>
+              {item.checked && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-1">
+              <span className={`text-sm transition-colors ${
+                item.checked ? "line-through text-zinc-400" : "text-zinc-700"
+              }`}>
+                {item.text}
+              </span>
+              {item.checked_by && (
+                <span className="text-xs text-zinc-400 shrink-0">
+                  {item.checked ? "✓" : "↺"} {item.checked_by}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <button onClick={() => remove(cl.id)} className="p-2 rounded-md hover:bg-red-50 text-red-600 shrink-0">
+      <Trash2 className="w-4 h-4" />
+    </button>
+  </div>
 </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <button onClick={() => remove(cl.id)} className="p-2 rounded-md hover:bg-red-50 text-red-600 shrink-0">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              
             );
           })}
         </div>
@@ -156,8 +159,8 @@ export default function AdminChecklistsPage() {
                 onChange={(e) => setForm({ ...form, client_id: e.target.value })}
                 className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F77418]"
               >
-                <option value="" className="text-black">All clients</option>
-                {clients.map((c) => <option  className="text-black" key={c.id} value={c.id}>{c.name}</option>)}
+                <option value="">All clients</option>
+                {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>

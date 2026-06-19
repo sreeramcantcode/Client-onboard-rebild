@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState , useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api, { formatApiError } from "@/lib/api";
 import {
   PageHeader,
@@ -13,7 +13,7 @@ import {
   Select,
   Textarea,
 } from "@/components/primitives";
-import { Megaphone, Plus, Trash2, Paperclip, X, FileText, Loader2 } from "lucide-react";
+import { Megaphone, Plus, Trash2, Paperclip, X, FileText, Loader2, Eye } from "lucide-react";
 
 interface Update {
   id: string;
@@ -45,6 +45,10 @@ export default function AdminUpdatesPage() {
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ← HTML preview state
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
   const load = async () => {
     const [u, c] = await Promise.all([
       api.get<Update[]>("/admin/updates"),
@@ -63,7 +67,6 @@ export default function AdminUpdatesPage() {
     if (!file) return;
     setSelectedFile(file);
     setUploadError("");
-    // Clear any previously uploaded attachment
     setForm((f) => ({ ...f, attachment_url: "", attachment_name: "" }));
   };
 
@@ -76,13 +79,11 @@ export default function AdminUpdatesPage() {
 
   const submit = async () => {
     setError("");
-
     setUploadError("");
 
     let attachment_url = form.attachment_url;
     let attachment_name = form.attachment_name;
 
-    // If a file is selected but not yet uploaded, upload it first
     if (selectedFile && !attachment_url) {
       setUploading(true);
       try {
@@ -116,7 +117,6 @@ export default function AdminUpdatesPage() {
         attachment_name: attachment_name || null,
       });
 
-      // Reset
       setCreating(false);
       setForm({ title: "", body: "", client_id: "", category: "Update", attachment_url: "", attachment_name: "" });
       setSelectedFile(null);
@@ -131,6 +131,27 @@ export default function AdminUpdatesPage() {
     if (!window.confirm("Delete this update?")) return;
     await api.delete(`/admin/updates/${id}`);
     load();
+  };
+
+  // ← HTML preview handlers
+  const openHtmlPreview = async (url: string) => {
+    setLoadingPreview(true);
+    try {
+      const res = await fetch(url);
+      const html = await res.text();
+      const blob = new Blob([html], { type: "text/html" });
+      const blobUrl = URL.createObjectURL(blob);
+      setIframeUrl(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (iframeUrl) URL.revokeObjectURL(iframeUrl);
+    setIframeUrl(null);
   };
 
   const isSubmitting = uploading;
@@ -160,6 +181,8 @@ export default function AdminUpdatesPage() {
             const target = u.client_id
               ? clients.find((c) => c.id === u.client_id)?.name || "Client"
               : "All clients";
+            const isHtml = u.attachment_name?.toLowerCase().endsWith(".html");
+
             return (
               <div
                 key={u.id}
@@ -178,16 +201,29 @@ export default function AdminUpdatesPage() {
                       {u.title}
                     </div>
                     <div className="text-sm text-zinc-600 mt-1 whitespace-pre-line">{u.body}</div>
+
                     {u.attachment_url && (
-                      
-                       <a href={u.attachment_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-200 text-zinc-700 text-xs font-medium transition"
-                      >
-                        <FileText className="w-3.5 h-3.5 text-[#F77418]" />
-                        {u.attachment_name || "View attachment"}
-                      </a>
+                      isHtml ? (
+                        <button
+                          onClick={() => openHtmlPreview(u.attachment_url!)}
+                          disabled={loadingPreview}
+                          className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-800 text-white text-xs font-medium transition"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#F77418]" />
+                          {loadingPreview ? "Loading..." : (u.attachment_name || "View attachment")}
+                        </button>
+                      ) : (
+                        <a
+                        
+                          href={u.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-800 text-white text-xs font-medium transition"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-[#F77418]" />
+                          {u.attachment_name || "View attachment"}
+                        </a>
+                      )
                     )}
                   </div>
                   <button
@@ -257,7 +293,7 @@ export default function AdminUpdatesPage() {
           </div>
           <div>
             <div className="text-xs font-semibold text-zinc-700 mb-1.5">
-              Attachment <span className="font-normal text-zinc-400">(PDF or Word, max 10MB)</span>
+              Attachment <span className="font-normal text-zinc-400">(PDF, Word, or HTML, max 10MB)</span>
             </div>
 
             {!selectedFile ? (
@@ -267,7 +303,7 @@ export default function AdminUpdatesPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  accept=".pdf,.doc,.docx,.html,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/html"
                   className="hidden"
                   onChange={handleFileChange}
                 />
@@ -299,6 +335,28 @@ export default function AdminUpdatesPage() {
           </PrimaryButton>
         </div>
       </Modal>
+
+      {/* HTML preview modal */}
+      {iframeUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+              <span className="font-semibold text-zinc-900 text-sm">Preview</span>
+              <button
+                onClick={closePreview}
+                className="text-zinc-400 hover:text-zinc-700 transition text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <iframe
+              src={iframeUrl}
+              className="flex-1 w-full"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

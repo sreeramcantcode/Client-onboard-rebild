@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { PageHeader, StatCard, Pill, Loader, EmptyState } from "@/components/primitives";
 import * as Lucide from "lucide-react";
@@ -78,6 +79,7 @@ export default function ClientDashboardPage() {
 
   if (!data) return <Loader />;
   const u = data.user;
+  const router = useRouter();
 
   return (
     <div className="p-6 md:p-10 ">
@@ -181,22 +183,23 @@ export default function ClientDashboardPage() {
               <div className="space-y-3">
                 {data.updates.map((upd) => (
                   <div
-                    key={upd.id}
-                    className="border border-zinc-200 rounded-xl p-4 hover:border-zinc-300 transition"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Pill status={upd.category || "update"} />
-                          <span className="text-xs text-zinc-400">
-                            {new Date(upd.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="font-semibold text-zinc-900 mt-1.5">{upd.title}</div>
-                        <div className="text-sm text-zinc-600 mt-1 line-clamp-2">{upd.body}</div>
-                      </div>
-                    </div>
-                  </div>
+  key={upd.id}
+  onClick={() => router.push(`${PORTAL_BASE}/client/updates`)}
+  className="border border-zinc-200 rounded-xl p-4 hover:border-zinc-300 hover:shadow-sm cursor-pointer transition"
+>
+  <div className="flex items-start justify-between gap-3">
+    <div className="min-w-0">
+      <div className="flex items-center gap-2">
+        <Pill status={upd.category || "update"} />
+        <span className="text-xs text-zinc-400">
+          {new Date(upd.created_at).toLocaleDateString()}
+        </span>
+      </div>
+      <div className="font-semibold text-zinc-900 mt-1.5">{upd.title}</div>
+      <div className="text-sm text-zinc-600 mt-1 line-clamp-2">{upd.body}</div>
+    </div>
+  </div>
+</div>
                 ))}
               </div>
             )}

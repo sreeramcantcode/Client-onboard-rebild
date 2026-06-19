@@ -337,17 +337,27 @@ async def toggle_checklist_item(
     if not checklist:
         raise HTTPException(status_code=404, detail="Checklist not found")
 
-    checked_by = None
-    if payload.checked:
-        checked_by = "Rebild Team" if user.get("role") == "admin" else user.get("name", "Client")
+    # Ownership check: clients can only toggle their own or global checklists
+    if user.get("role") != "admin":
+        if checklist.get("client_id") not in (None, user["id"]):
+            raise HTTPException(status_code=403, detail="Not authorized for this checklist")
 
-    await db.checklists.update_one(
+    actor = "Rebild Team" if user.get("role") == "admin" else user.get("name", "Client")
+
+    update_fields = {"items.$.checked": payload.checked}
+    if payload.checked:
+        update_fields["items.$.checked_by"] = actor
+    else:
+        update_fields["items.$.checked_by"] = None
+
+    result = await db.checklists.update_one(
         {"id": checklist_id, "items.id": item_id},
-        {"$set": {
-            "items.$.checked": payload.checked,
-            "items.$.checked_by": checked_by,
-        }}
+        {"$set": update_fields},
     )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+
     return {"ok": True}
 
 # ---------------- Documents ----------------
