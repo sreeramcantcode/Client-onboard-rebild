@@ -222,7 +222,7 @@ export default function AdminUpdatesPage() {
                         >
                           <FileText className="w-3.5 h-3.5 text-[#F77418]" />
                           {u.attachment_name || "View attachment"}
-                        </a>
+                        </a>  
                       )
                     )}
                   </div>

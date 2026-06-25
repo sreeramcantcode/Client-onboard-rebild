@@ -1,7 +1,8 @@
 {
   "/client-portal/client/page": "app/client-portal/client/page.js",
-  "/client-portal/client/documents/page": "app/client-portal/client/documents/page.js",
-  "/client-portal/client/profile/page": "app/client-portal/client/profile/page.js",
   "/client-portal/client/support/page": "app/client-portal/client/support/page.js",
-  "/client-portal/client/invoices/page": "app/client-portal/client/invoices/page.js"
+  "/client-portal/client/profile/page": "app/client-portal/client/profile/page.js",
+  "/client-portal/client/reports/page": "app/client-portal/client/reports/page.js",
+  "/client-portal/client/updates/page": "app/client-portal/client/updates/page.js",
+  "/client-portal/client/documents/page": "app/client-portal/client/documents/page.js"
 }
