@@ -31,6 +31,7 @@ export default function AdminUpdatesPage() {
   const [updates, setUpdates] = useState<Update[] | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [creating, setCreating] = useState(false);
+  const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
   const [form, setForm] = useState({
     title: "",
     body: "",
@@ -133,7 +134,40 @@ export default function AdminUpdatesPage() {
     load();
   };
 
+  useEffect(() => {
+  if (!iframeUrl) return;
+
+  const scrollY = window.scrollY;
+
+  const originalOverflow = document.body.style.overflow;
+  const originalPosition = document.body.style.position;
+  const originalTop = document.body.style.top;
+  const originalWidth = document.body.style.width;
+
+  document.body.style.overflow = "hidden";
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.width = "100%";
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") closePreview();
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    document.body.style.overflow = originalOverflow;
+    document.body.style.position = originalPosition;
+    document.body.style.top = originalTop;
+    document.body.style.width = originalWidth;
+    window.scrollTo(0, scrollY);
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [iframeUrl]);
+     
+
   // ← HTML preview handlers
+
   const openHtmlPreview = async (url: string) => {
     setLoadingPreview(true);
     try {
@@ -152,6 +186,45 @@ export default function AdminUpdatesPage() {
   const closePreview = () => {
     if (iframeUrl) URL.revokeObjectURL(iframeUrl);
     setIframeUrl(null);
+  };
+
+  // Shared attachment chip renderer, used both in the list and the detail modal.
+  // `stopPropagation` matters in the list view since the chip sits inside a
+  // clickable row that opens the detail modal.
+  const renderAttachmentChip = (u: Update, stopPropagation: boolean) => {
+    if (!u.attachment_url) return null;
+    const isHtml = u.attachment_name?.toLowerCase().endsWith(".html");
+
+    const handleClick = (e: React.MouseEvent) => {
+      if (stopPropagation) e.stopPropagation();
+      if (isHtml) openHtmlPreview(u.attachment_url!);
+    };
+
+    if (isHtml) {
+      return (
+        <button
+          onClick={handleClick}
+          disabled={loadingPreview}
+          className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-800 text-white text-xs font-medium transition"
+        >
+          <Eye className="w-3.5 h-3.5 text-[#F77418]" />
+          {loadingPreview ? "Loading..." : (u.attachment_name || "View attachment")}
+        </button>
+      );
+    }
+
+    return (
+      <a
+        href={u.attachment_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}
+        className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-800 text-white text-xs font-medium transition"
+      >
+        <FileText className="w-3.5 h-3.5 text-[#F77418]" />
+        {u.attachment_name || "View attachment"}
+      </a>
+    );
   };
 
   const isSubmitting = uploading;
@@ -181,12 +254,12 @@ export default function AdminUpdatesPage() {
             const target = u.client_id
               ? clients.find((c) => c.id === u.client_id)?.name || "Client"
               : "All clients";
-            const isHtml = u.attachment_name?.toLowerCase().endsWith(".html");
 
             return (
               <div
                 key={u.id}
-                className="border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition"
+                onClick={() => setSelectedUpdate(u)}
+                className="border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -200,34 +273,17 @@ export default function AdminUpdatesPage() {
                     <div className="font-display font-bold text-lg text-zinc-900 mt-1.5">
                       {u.title}
                     </div>
-                    <div className="text-sm text-zinc-600 mt-1 whitespace-pre-line">{u.body}</div>
+                    <div className="text-sm text-zinc-600 mt-1 whitespace-pre-line line-clamp-2">
+                      {u.body}
+                    </div>
 
-                    {u.attachment_url && (
-                      isHtml ? (
-                        <button
-                          onClick={() => openHtmlPreview(u.attachment_url!)}
-                          disabled={loadingPreview}
-                          className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-800 text-white text-xs font-medium transition"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-[#F77418]" />
-                          {loadingPreview ? "Loading..." : (u.attachment_name || "View attachment")}
-                        </button>
-                      ) : (
-                        <a
-                        
-                          href={u.attachment_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-black hover:bg-zinc-800 text-white text-xs font-medium transition"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-[#F77418]" />
-                          {u.attachment_name || "View attachment"}
-                        </a>  
-                      )
-                    )}
+                    {renderAttachmentChip(u, true)}
                   </div>
                   <button
-                    onClick={() => remove(u.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(u.id);
+                    }}
                     className="p-2 rounded-md hover:bg-red-50 text-red-600 shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -336,27 +392,69 @@ export default function AdminUpdatesPage() {
         </div>
       </Modal>
 
-      {/* HTML preview modal */}
-      {iframeUrl && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
-              <span className="font-semibold text-zinc-900 text-sm">Preview</span>
-              <button
-                onClick={closePreview}
-                className="text-zinc-400 hover:text-zinc-700 transition text-lg leading-none"
-              >
-                ✕
-              </button>
+      {/* Detail modal — opened by clicking a row, mirrors client-side update modal */}
+      <Modal
+        open={!!selectedUpdate}
+        onClose={() => setSelectedUpdate(null)}
+        title={selectedUpdate?.title || "Update"}
+      >
+        {selectedUpdate && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Pill status={selectedUpdate.category || "update"} />
+              <span className="text-xs text-zinc-500 font-mono">
+                → {selectedUpdate.client_id
+                  ? clients.find((c) => c.id === selectedUpdate.client_id)?.name || "Client"
+                  : "All clients"}
+              </span>
+              <span className="text-xs text-zinc-400">
+                {new Date(selectedUpdate.created_at).toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
             </div>
-            <iframe
-              src={iframeUrl}
-              className="flex-1 w-full"
-              sandbox="allow-scripts allow-same-origin"
-            />
+
+            <div className="text-2xl font-bold text-zinc-900">
+              {selectedUpdate.title}
+            </div>
+
+            <div className="text-sm leading-7 text-zinc-600 whitespace-pre-line">
+              {selectedUpdate.body}
+            </div>
+
+            {renderAttachmentChip(selectedUpdate, false)}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
+
+{iframeUrl && (
+  <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+        <span className="font-semibold text-zinc-900 text-sm">
+          Preview
+        </span>
+
+        <button
+          onClick={closePreview}
+          className="text-zinc-400 hover:text-zinc-700 transition text-lg leading-none"
+        >
+          ✕
+        </button>
+      </div>
+
+      <iframe
+        src={iframeUrl}
+        className="flex-1 w-full"
+        sandbox="allow-scripts allow-same-origin"
+      />
     </div>
-  );
-}
+  </div>
+)}
+
+</div>
+
+
+);}

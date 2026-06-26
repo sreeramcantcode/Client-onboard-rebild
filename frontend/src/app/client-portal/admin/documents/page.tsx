@@ -28,9 +28,10 @@ export default function AdminDocumentsPage() {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ← preview state
+  // ← preview state (per-document loading, not a single shared boolean)
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
-  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [loadingPreviewId, setLoadingPreviewId] = useState<string | null>(null);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
   const load = async () => {
     const [d, c] = await Promise.all([
@@ -40,6 +41,51 @@ export default function AdminDocumentsPage() {
     setDocuments(d.data || []);
     setClients(c.data || []);
   };
+
+  // Lock background scroll + close on Escape (also catches Escape if focus is inside the iframe)
+  useEffect(() => {
+    if (!iframeUrl) return;
+
+    const scrollY = window.scrollY;
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalWidth = document.body.style.width;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closePreview();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    const iframeEl = previewIframeRef.current;
+    const attachToIframe = () => {
+      try {
+        iframeEl?.contentWindow?.document.addEventListener("keydown", handleKeyDown);
+      } catch {
+        // cross-origin, ignore
+      }
+    };
+    iframeEl?.addEventListener("load", attachToIframe);
+    attachToIframe();
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = originalTop;
+      document.body.style.width = originalWidth;
+      window.scrollTo(0, scrollY);
+      window.removeEventListener("keydown", handleKeyDown);
+      try {
+        iframeEl?.contentWindow?.document.removeEventListener("keydown", handleKeyDown);
+      } catch {}
+      iframeEl?.removeEventListener("load", attachToIframe);
+    };
+  }, [iframeUrl]);
 
   useEffect(() => { load(); }, []);
   if (!documents) return <Loader />;
@@ -115,9 +161,9 @@ export default function AdminDocumentsPage() {
     load();
   };
 
-  // ← preview handlers
-  const openHtmlPreview = async (url: string) => {
-    setLoadingPreview(true);
+  // ← preview handlers (id-scoped loading)
+  const openHtmlPreview = async (id: string, url: string) => {
+    setLoadingPreviewId(id);
     try {
       const res = await fetch(url);
       const html = await res.text();
@@ -127,7 +173,7 @@ export default function AdminDocumentsPage() {
     } catch {
       window.open(url, "_blank");
     } finally {
-      setLoadingPreview(false);
+      setLoadingPreviewId(null);
     }
   };
 
@@ -185,15 +231,17 @@ export default function AdminDocumentsPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     {isHtml ? (
                       <button
-                        onClick={() => openHtmlPreview(doc.attachment_url)}
-                        disabled={loadingPreview}
+                        onClick={() => openHtmlPreview(doc.id, doc.attachment_url)}
+                        disabled={loadingPreviewId === doc.id}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        {loadingPreview ? "Loading..." : "View"}
+                        {loadingPreviewId === doc.id ? "Loading..." : "View"}
                       </button>
                     ) : isPdfOrImage ? (
-                        <a
+
+                      <a
+                        
                         href={doc.attachment_url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -203,8 +251,8 @@ export default function AdminDocumentsPage() {
                         View
                       </a>
                     ) : null}
-                      <a
-                    
+                      
+                       <a 
                       href={doc.attachment_url}
                       download={doc.attachment_name}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F77418] hover:bg-[#e06810] text-white transition"
@@ -306,6 +354,7 @@ export default function AdminDocumentsPage() {
               </button>
             </div>
             <iframe
+              ref={previewIframeRef}
               src={iframeUrl}
               className="flex-1 w-full"
               sandbox="allow-scripts allow-same-origin"

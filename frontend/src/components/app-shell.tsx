@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 
+
 import {
   Home,
   Briefcase,
@@ -276,14 +277,16 @@ export default function AppShell({
   const { logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const allRoutes = [...CLIENT_NAV, ...ADMIN_NAV];
+  const nav = kind === "admin" ? ADMIN_NAV : CLIENT_NAV;
+  const allRoutes = nav;
+  
 
 const filteredRoutes = allRoutes.filter((item) =>
   item.label.toLowerCase().includes(search.toLowerCase())
 );
   const pathname = usePathname();
   const router = useRouter();
-  const nav = kind === "admin" ? ADMIN_NAV : CLIENT_NAV;
+  
 
   useEffect(() => {
     setMobileOpen(false);
@@ -294,13 +297,19 @@ const filteredRoutes = allRoutes.filter((item) =>
     router.push(`${PORTAL_BASE}/login`);
   };
 
+  const home = () => {
+  router.replace(nav[0].href);
+};
+
   const crumb = pathname.split("/").filter(Boolean).slice(-1)[0] || "Dashboard";
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       <aside className="hidden md:flex w-[252px] shrink-0 flex-col bg-[#0a0a0a] border-r border-white/[0.06] sticky top-0 h-screen">
         <div className="px-5 pt-6 pb-4 cursor-pointer flex items-center justify-between">
+          <div onClick={home}>
           <RebildLogo size="md" />
+          </div>
           <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 border border-white/10 px-1.5 py-0.5 rounded">
             {kind === "admin" ? "Admin" : "Portal"}
           </span>
@@ -375,16 +384,18 @@ const filteredRoutes = allRoutes.filter((item) =>
   <div className="absolute top-14  w-72 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
     {filteredRoutes.length > 0 ? (
       filteredRoutes.map((item) => (
-        <button
-          key={item.href}
-          onClick={() => {
-            router.push(item.href);
-            setSearch("");
-          }}
-          className="w-full px-4 py-3 text-left hover:bg-white/5 text-sm text-zinc-300 border-b border-white/5"
-        >
-          {item.label}
-        </button>
+       <button
+  key={item.href ?? item.label}
+  onMouseDown={(e) => {
+    e.preventDefault();
+    console.log("clicked item:", item);
+    router.push(item.href);
+    setSearch("");
+  }}
+  className="w-full px-4 py-3 text-left hover:bg-white/5 text-sm text-zinc-300 border-b border-white/5"
+>
+  {item.label}
+</button>
       ))
     ) : (
       <div className="px-4 py-3 text-sm text-zinc-500">

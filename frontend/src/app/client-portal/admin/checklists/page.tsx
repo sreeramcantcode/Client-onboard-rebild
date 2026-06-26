@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api, { formatApiError } from "@/lib/api";
 import {
   PageHeader, Loader, EmptyState, PrimaryButton,
   Pill, Modal, Input,
 } from "@/components/primitives";
-import { CheckSquare, Plus, Trash2, X } from "lucide-react";
+import { CheckSquare, Plus, Trash2, X, GripVertical } from "lucide-react";
 
 interface ChecklistItem { id: string; text: string; checked: boolean;checked_by?: string | null }
 interface Checklist {
@@ -22,6 +22,9 @@ export default function AdminChecklistsPage() {
   const [form, setForm] = useState({ title: "", client_id: "" });
   const [itemTexts, setItemTexts] = useState<string[]>([""]);
   const [error, setError] = useState("");
+  const [dragState, setDragState] = useState<{ checklistId: string; itemId: string } | null>(null);
+  const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+  const dragSavedOrder = useRef<Record<string, ChecklistItem[]>>({});
 
   const load = async () => {
     const [cl, c] = await Promise.all([
@@ -68,6 +71,58 @@ export default function AdminChecklistsPage() {
     load();
   };
 
+  const persistOrder = async (checklistId: string, items: ChecklistItem[]) => {
+    try {
+      await api.patch(`/checklists/${checklistId}/reorder`, {
+        item_ids: items.map((i) => i.id),
+      });
+    } catch (err) {
+      // revert to last known-good order from the server on failure
+      const fallback = dragSavedOrder.current[checklistId];
+      if (fallback) {
+        setChecklists((prev) =>
+          prev
+            ? prev.map((cl) => (cl.id === checklistId ? { ...cl, items: fallback } : cl))
+            : prev
+        );
+      }
+    }
+  };
+
+  const handleDragStart = (checklistId: string, itemId: string) => {
+    const cl = checklists.find((c) => c.id === checklistId);
+    if (cl) dragSavedOrder.current[checklistId] = cl.items;
+    setDragState({ checklistId, itemId });
+  };
+
+  const handleDragOver = (e: React.DragEvent, checklistId: string, overItemId: string) => {
+    e.preventDefault();
+    if (!dragState || dragState.checklistId !== checklistId) return;
+    if (overItemId === dragState.itemId) return;
+    setDragOverItemId(overItemId);
+
+    setChecklists((prev) => {
+      if (!prev) return prev;
+      return prev.map((cl) => {
+        if (cl.id !== checklistId) return cl;
+        const items = [...cl.items];
+        const fromIdx = items.findIndex((i) => i.id === dragState.itemId);
+        const toIdx = items.findIndex((i) => i.id === overItemId);
+        if (fromIdx === -1 || toIdx === -1) return cl;
+        const [moved] = items.splice(fromIdx, 1);
+        items.splice(toIdx, 0, moved);
+        return { ...cl, items };
+      });
+    });
+  };
+
+  const handleDragEnd = async (checklistId: string) => {
+    setDragOverItemId(null);
+    setDragState(null);
+    const cl = checklists.find((c) => c.id === checklistId);
+    if (cl) await persistOrder(checklistId, cl.items);
+  };
+
   return (
     <div className="p-6 md:p-10">
       <PageHeader
@@ -104,31 +159,51 @@ export default function AdminChecklistsPage() {
         {cl.items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => toggle(cl.id, item.id, !item.checked)}
+            draggable
+            onDragStart={() => handleDragStart(cl.id, item.id)}
+            onDragOver={(e) => handleDragOver(e, cl.id, item.id)}
+            onDrop={(e) => e.preventDefault()}
+            onDragEnd={() => handleDragEnd(cl.id)}
+            className={`flex items-center gap-2 group rounded-lg transition-colors ${
+              dragOverItemId === item.id && dragState?.itemId !== item.id
+                ? "bg-[#F77418]/5"
+                : ""
+            } ${dragState?.itemId === item.id ? "opacity-50" : ""}`}
           >
-            <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
-              item.checked
-                ? "bg-[#F77418] border-[#F77418]"
-                : "border-zinc-300 group-hover:border-[#F77418]"
-            }`}>
-              {item.checked && (
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              )}
+            <div
+              className="shrink-0 p-1 -ml-1 cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 transition-colors"
+              title="Drag to reorder"
+            >
+              <GripVertical className="w-4 h-4" />
             </div>
-            <div className="flex items-center gap-2 flex-1">
-              <span className={`text-sm transition-colors ${
-                item.checked ? "line-through text-zinc-400" : "text-zinc-700"
+
+            <div
+              className="flex items-center gap-3 flex-1 cursor-pointer"
+              onClick={() => toggle(cl.id, item.id, !item.checked)}
+            >
+              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+                item.checked
+                  ? "bg-[#F77418] border-[#F77418]"
+                  : "border-zinc-300 group-hover:border-[#F77418]"
               }`}>
-                {item.text}
-              </span>
-              {item.checked_by && (
-                <span className="text-xs text-zinc-400 shrink-0">
-                  {item.checked ? "✓" : "↺"} {item.checked_by}
+                {item.checked && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-1">
+                <span className={`text-sm transition-colors ${
+                  item.checked ? "line-through text-zinc-400" : "text-zinc-700"
+                }`}>
+                  {item.text}
                 </span>
-              )}
+                {item.checked_by && (
+                  <span className="text-xs text-zinc-400 shrink-0">
+                    {item.checked ? "✓" : "↺"} {item.checked_by}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}

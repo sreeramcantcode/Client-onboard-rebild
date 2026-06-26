@@ -137,6 +137,9 @@ class LoginIn(BaseModel):
     email: EmailStr
     password: str
 
+class ReorderItemsIn(BaseModel):
+    item_ids: list[str]
+
 
 class CreateClientIn(BaseModel):
     name: str
@@ -303,6 +306,29 @@ async def create_checklist(payload: ChecklistIn, _: dict = Depends(require_admin
     }
     await db.checklists.insert_one(doc)
     doc.pop("_id", None)
+
+    # notify
+    if payload.client_id:
+        recipients = [payload.client_id]
+    else:
+        clients = await db.users.find({"role": "client"}, {"id": 1, "_id": 0}).to_list(2000)
+        recipients = [c["id"] for c in clients]
+    if recipients:
+        await db.notifications.insert_many(
+            [
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": cid,
+                    "title": f"New checklist: {payload.title}",
+                    "body": f"{len(items)} item(s) to complete",
+                    "type": "checklist",
+                    "read": False,
+                    "link": "/client/checklists",
+                    "created_at": now_iso(),
+                }
+                for cid in recipients
+            ]
+        )
     return doc
 
 
@@ -360,6 +386,39 @@ async def toggle_checklist_item(
 
     return {"ok": True}
 
+@api.patch("/checklists/{checklist_id}/reorder")
+async def reorder_checklist_items(
+    checklist_id: str,
+    payload: ReorderItemsIn,
+    user: dict = Depends(get_current_user),
+):
+    checklist = await db.checklists.find_one({"id": checklist_id})
+    if not checklist:
+        raise HTTPException(status_code=404, detail="Checklist not found")
+
+    # Ownership check: clients can only reorder their own or global checklists
+    if user.get("role") != "admin":
+        if checklist.get("client_id") not in (None, user["id"]):
+            raise HTTPException(status_code=403, detail="Not authorized for this checklist")
+
+    existing_items = {item["id"]: item for item in checklist.get("items", [])}
+
+    # Validate the incoming ids are exactly the same set as the existing items
+    if set(payload.item_ids) != set(existing_items.keys()):
+        raise HTTPException(status_code=400, detail="item_ids must match existing checklist items")
+
+    reordered_items = [existing_items[item_id] for item_id in payload.item_ids]
+
+    result = await db.checklists.update_one(
+        {"id": checklist_id},
+        {"$set": {"items": reordered_items}},
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Checklist not found")
+
+    return {"ok": True}
+
 # ---------------- Documents ----------------
 @api.post("/admin/documents")
 async def create_document(payload: DocumentIn, _: dict = Depends(require_admin)):
@@ -373,6 +432,29 @@ async def create_document(payload: DocumentIn, _: dict = Depends(require_admin))
     }
     await db.documents.insert_one(doc)
     doc.pop("_id", None)
+
+    # notify
+    if payload.client_id:
+        recipients = [payload.client_id]
+    else:
+        clients = await db.users.find({"role": "client"}, {"id": 1, "_id": 0}).to_list(2000)
+        recipients = [c["id"] for c in clients]
+    if recipients:
+        await db.notifications.insert_many(
+            [
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": cid,
+                    "title": f"New document: {payload.title}",
+                    "body": payload.attachment_name,
+                    "type": "document",
+                    "read": False,
+                    "link": "/client/documents",
+                    "created_at": now_iso(),
+                }
+                for cid in recipients
+            ]
+        )
     return doc
 
 
@@ -836,11 +918,27 @@ async def admin_reply_ticket(ticket_id: str, payload: TicketMessageIn, admin: di
 
 @api.patch("/admin/tickets/{ticket_id}/status")
 async def admin_set_ticket_status(ticket_id: str, payload: TicketStatusIn, _: dict = Depends(require_admin)):
-    res = await db.tickets.update_one(
+    ticket = await db.tickets.find_one({"id": ticket_id})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    await db.tickets.update_one(
         {"id": ticket_id}, {"$set": {"status": payload.status, "updated_at": now_iso()}}
     )
-    if res.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    # notify client
+    await db.notifications.insert_one(
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": ticket["client_id"],
+            "title": "Ticket status updated",
+            "body": f"Your ticket \"{ticket['subject']}\" is now {payload.status}",
+            "type": "ticket",
+            "read": False,
+            "link": "/client/support",
+            "created_at": now_iso(),
+        }
+    )
     return {"ok": True}
 
 
