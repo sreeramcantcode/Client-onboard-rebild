@@ -46,12 +46,12 @@ interface NavItem {
 const CLIENT_NAV: NavItem[] = [
   { href: `${PORTAL_BASE}/client`, label: "Dashboard", icon: Home, exact: true },
   { href: `${PORTAL_BASE}/client/services`, label: "Services", icon: Briefcase },
-  { href: `${PORTAL_BASE}/client/invoices`, label: "Invoices", icon: Receipt },
-  { href: `${PORTAL_BASE}/client/updates`, label: "Updates", icon: BellRing },
   { href: `${PORTAL_BASE}/client/addons`, label: "Add-ons", icon: Plus },
+  { href: `${PORTAL_BASE}/client/updates`, label: "Updates", icon: BellRing },
+  { href: `${PORTAL_BASE}/client/reports`, label: "Reports", icon: FileText },
+  { href: `${PORTAL_BASE}/client/invoices`, label: "Invoices", icon: Receipt },
   { href: `${PORTAL_BASE}/client/checklists`, label: "Checklists", icon: ListChecks},
   { href: `${PORTAL_BASE}/client/documents`, label: "My Responses", icon: FileText },
-  { href: `${PORTAL_BASE}/client/reports`, label: "Reports", icon: FileText },
   { href: `${PORTAL_BASE}/client/support`, label: "Support", icon: LifeBuoy },
   { href: `${PORTAL_BASE}/client/profile`, label: "Profile", icon: UserIcon },
   
