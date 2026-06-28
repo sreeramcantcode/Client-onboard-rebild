@@ -18,7 +18,7 @@ import jwt
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status, UploadFile, File
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict,model_validator
 from supabase import create_client, Client
 
 supabase: Client = create_client(
@@ -140,6 +140,8 @@ class LoginIn(BaseModel):
 class ReorderItemsIn(BaseModel):
     item_ids: list[str]
 
+class ReorderChecklistsIn(BaseModel):
+    checklist_ids: List[str]
 
 class CreateClientIn(BaseModel):
     name: str
@@ -166,6 +168,22 @@ class DocumentIn(BaseModel):
     client_id: Optional[str] = None  # None = visible to all clients
     attachment_url: str
     attachment_name: str
+    link_url: Optional[str] = None
+
+class DocumentIn(BaseModel):
+    title: str
+    client_id: Optional[str] = None  # None = visible to all clients
+    attachment_url: Optional[str] = None
+    attachment_name: Optional[str] = None
+    link_url: Optional[str] = None
+
+    @model_validator(mode="after")
+    def check_exactly_one_source(self):
+        has_file = bool(self.attachment_url)
+        has_link = bool(self.link_url)
+        if has_file == has_link:  # both True or both False
+            raise ValueError("Provide either a file attachment or a link, not both/neither")
+        return self
 
 class ResetPasswordIn(BaseModel):
     password: Optional[str] = None  # if not provided, generated
@@ -343,12 +361,11 @@ async def delete_checklist(checklist_id: str, _: dict = Depends(require_admin)):
     await db.checklists.delete_one({"id": checklist_id})
     return {"ok": True}
 
-
 @api.get("/client/checklists")
 async def client_list_checklists(user: dict = Depends(require_client)):
     items = await db.checklists.find(
         {"$or": [{"client_id": user["id"]}, {"client_id": None}]}, {"_id": 0}
-    ).sort("created_at", -1).to_list(1000)
+    ).sort([("order", 1), ("created_at", -1)]).to_list(1000)
     return items
 
 
@@ -386,36 +403,30 @@ async def toggle_checklist_item(
 
     return {"ok": True}
 
-@api.patch("/checklists/{checklist_id}/reorder")
-async def reorder_checklist_items(
-    checklist_id: str,
-    payload: ReorderItemsIn,
+@api.patch("/checklists/reorder")
+async def reorder_checklists(
+    payload: ReorderChecklistsIn,
     user: dict = Depends(get_current_user),
 ):
-    checklist = await db.checklists.find_one({"id": checklist_id})
-    if not checklist:
-        raise HTTPException(status_code=404, detail="Checklist not found")
+    # Fetch only the checklists this user is allowed to reorder
+    if user.get("role") == "admin":
+        visible_cursor = db.checklists.find({}, {"id": 1, "_id": 0})
+    else:
+        visible_cursor = db.checklists.find(
+            {"$or": [{"client_id": user["id"]}, {"client_id": None}]},
+            {"id": 1, "_id": 0},
+        )
+    visible_ids = {c["id"] for c in await visible_cursor.to_list(2000)}
 
-    # Ownership check: clients can only reorder their own or global checklists
-    if user.get("role") != "admin":
-        if checklist.get("client_id") not in (None, user["id"]):
-            raise HTTPException(status_code=403, detail="Not authorized for this checklist")
+    # Validate the incoming ids are exactly the same set as the visible checklists
+    if set(payload.checklist_ids) != visible_ids:
+        raise HTTPException(status_code=400, detail="checklist_ids must match visible checklists")
 
-    existing_items = {item["id"]: item for item in checklist.get("items", [])}
-
-    # Validate the incoming ids are exactly the same set as the existing items
-    if set(payload.item_ids) != set(existing_items.keys()):
-        raise HTTPException(status_code=400, detail="item_ids must match existing checklist items")
-
-    reordered_items = [existing_items[item_id] for item_id in payload.item_ids]
-
-    result = await db.checklists.update_one(
-        {"id": checklist_id},
-        {"$set": {"items": reordered_items}},
-    )
-
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Checklist not found")
+    for index, checklist_id in enumerate(payload.checklist_ids):
+        await db.checklists.update_one(
+            {"id": checklist_id},
+            {"$set": {"order": index}},
+        )
 
     return {"ok": True}
 
@@ -468,6 +479,8 @@ async def admin_list_documents(_: dict = Depends(require_admin)):
 async def delete_document(doc_id: str, _: dict = Depends(require_admin)):
     await db.documents.delete_one({"id": doc_id})
     return {"ok": True}
+
+
 
 
 @api.get("/client/documents")

@@ -3,14 +3,42 @@
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { PageHeader, Loader, EmptyState } from "@/components/primitives";
-import { FileText, Eye, Download } from "lucide-react";
+import {
+  FileText, Eye, Download,
+  Image as ImageIcon, FileSpreadsheet, Link2, File as FileIcon,
+} from "lucide-react";
 
 interface Document {
   id: string;
   title: string;
-  attachment_url: string;
-  attachment_name: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  link_url?: string | null;
   created_at: string;
+}
+
+// Same mapping as the admin page, kept in sync so icons/colors match across both views.
+function getFileVisual(doc: Document) {
+  if (doc.link_url) {
+    return { Icon: Link2, classes: "bg-blue-50 text-blue-500" };
+  }
+  const name = doc.attachment_name?.toLowerCase() || "";
+  if (name.endsWith(".pdf")) {
+    return { Icon: FileText, classes: "bg-red-50 text-red-500" };
+  }
+  if (name.endsWith(".doc") || name.endsWith(".docx")) {
+    return { Icon: FileText, classes: "bg-blue-50 text-blue-600" };
+  }
+  if (name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".csv")) {
+    return { Icon: FileSpreadsheet, classes: "bg-emerald-50 text-emerald-600" };
+  }
+  if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].some((ext) => name.endsWith(ext))) {
+    return { Icon: ImageIcon, classes: "bg-orange-50 text-[#F77418]" };
+  }
+  if (name.endsWith(".html")) {
+    return { Icon: FileText, classes: "bg-orange-50 text-[#F77418]" };
+  }
+  return { Icon: FileIcon, classes: "bg-zinc-100 text-zinc-500" };
 }
 
 export default function ClientDocumentsPage() {
@@ -89,35 +117,49 @@ export default function ClientDocumentsPage() {
       ) : (
         <div className="space-y-3">
           {documents.map((doc) => {
-            const isHtml = doc.attachment_name?.toLowerCase().endsWith(".html");
+            const isLink = !!doc.link_url;
+            const name = doc.attachment_name?.toLowerCase() || "";
+            const isHtml = !isLink && name.endsWith(".html");
             const isPdfOrImage =
-              doc.attachment_name?.toLowerCase().endsWith(".pdf") ||
-              doc.attachment_name?.toLowerCase().endsWith(".jpg") ||
-              doc.attachment_name?.toLowerCase().endsWith(".jpeg") ||
-              doc.attachment_name?.toLowerCase().endsWith(".png") ||
-              doc.attachment_name?.toLowerCase().endsWith(".gif") ||
-              doc.attachment_name?.toLowerCase().endsWith(".webp");
+              !isLink &&
+              (name.endsWith(".pdf") ||
+                name.endsWith(".jpg") ||
+                name.endsWith(".jpeg") ||
+                name.endsWith(".png") ||
+                name.endsWith(".gif") ||
+                name.endsWith(".webp"));
+
+            const { Icon, classes } = getFileVisual(doc);
 
             return (
               <div key={doc.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-[#F77418]/30 hover:shadow-sm transition">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5 text-[#F77418]" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${classes}`}>
+                      <Icon className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
                       <div className="font-semibold text-zinc-900 truncate">{doc.title}</div>
-                      <div className="text-xs text-zinc-400 mt-0.5">
-                        {doc.attachment_name} · {new Date(doc.created_at).toLocaleDateString()}
+                      <div className="text-xs text-zinc-400 mt-0.5 truncate">
+                        {isLink ? doc.link_url : doc.attachment_name} · {new Date(doc.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    {/* HTML → iframe modal, PDF/image → new tab */}
-                    {isHtml ? (
+                    {isLink ? (
+                      <a
+                        href={doc.link_url!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Open link
+                      </a>
+                    ) : isHtml ? (
                       <button
-                        onClick={() => openHtmlPreview(doc.id, doc.attachment_url)}
+                        onClick={() => openHtmlPreview(doc.id, doc.attachment_url!)}
                         disabled={loadingPreviewId === doc.id}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
                       >
@@ -125,10 +167,8 @@ export default function ClientDocumentsPage() {
                         {loadingPreviewId === doc.id ? "Loading..." : "View"}
                       </button>
                     ) : isPdfOrImage ? (
-
-                      <a 
-                      
-                        href={doc.attachment_url}
+                      <a
+                        href={doc.attachment_url!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition"
@@ -138,14 +178,17 @@ export default function ClientDocumentsPage() {
                       </a>
                     ) : null}
 
+                    {/* Download only makes sense for actual files, not links */}
+                    {!isLink && (
                       <a
-                      href={doc.attachment_url}
-                      download={doc.attachment_name}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F77418] hover:bg-[#e06810] text-white transition"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Download
-                    </a>
+                        href={doc.attachment_url!}
+                        download={doc.attachment_name!}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F77418] hover:bg-[#e06810] text-white transition"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Download
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

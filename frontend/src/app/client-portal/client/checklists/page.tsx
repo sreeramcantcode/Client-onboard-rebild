@@ -10,9 +10,16 @@ interface Checklist { id: string; title: string; items: ChecklistItem[]; created
 
 export default function ClientChecklistsPage() {
   const [checklists, setChecklists] = useState<Checklist[] | null>(null);
+
+  // item-level drag state (existing)
   const [dragState, setDragState] = useState<{ checklistId: string; itemId: string } | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
   const dragSavedOrder = useRef<Record<string, ChecklistItem[]>>({});
+
+  // card-level drag state (new)
+  const [cardDragId, setCardDragId] = useState<string | null>(null);
+  const [cardDragOverId, setCardDragOverId] = useState<string | null>(null);
+  const cardSavedOrder = useRef<Checklist[] | null>(null);
 
   const load = async () => {
     const res = await api.get<Checklist[]>("/client/checklists");
@@ -41,6 +48,19 @@ export default function ClientChecklistsPage() {
             ? prev.map((cl) => (cl.id === checklistId ? { ...cl, items: fallback } : cl))
             : prev
         );
+      }
+    }
+  };
+
+  const persistCardOrder = async (cards: Checklist[]) => {
+    try {
+      await api.patch(`/checklists/reorder`, {
+        checklist_ids: cards.map((c) => c.id),
+      });
+    } catch (err) {
+      // revert to last known-good order from the server on failure
+      if (cardSavedOrder.current) {
+        setChecklists(cardSavedOrder.current);
       }
     }
   };
@@ -79,6 +99,36 @@ export default function ClientChecklistsPage() {
     if (cl) await persistOrder(checklistId, cl.items);
   };
 
+  // ---- card-level handlers ----
+
+  const handleCardDragStart = (checklistId: string) => {
+    cardSavedOrder.current = checklists;
+    setCardDragId(checklistId);
+  };
+
+  const handleCardDragOver = (e: React.DragEvent, overChecklistId: string) => {
+    e.preventDefault();
+    if (!cardDragId || overChecklistId === cardDragId) return;
+    setCardDragOverId(overChecklistId);
+
+    setChecklists((prev) => {
+      if (!prev) return prev;
+      const cards = [...prev];
+      const fromIdx = cards.findIndex((c) => c.id === cardDragId);
+      const toIdx = cards.findIndex((c) => c.id === overChecklistId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const [moved] = cards.splice(fromIdx, 1);
+      cards.splice(toIdx, 0, moved);
+      return cards;
+    });
+  };
+
+  const handleCardDragEnd = async () => {
+    setCardDragOverId(null);
+    setCardDragId(null);
+    if (checklists) await persistCardOrder(checklists);
+  };
+
   return (
     <div className="p-6 md:p-10">
       <PageHeader
@@ -95,10 +145,28 @@ export default function ClientChecklistsPage() {
             const done = cl.items.filter((i) => i.checked).length;
             const pct = cl.items.length ? Math.round((done / cl.items.length) * 100) : 0;
             return (
-              <div key={cl.id} className="border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition">
+              <div
+                key={cl.id}
+                draggable
+                onDragStart={() => handleCardDragStart(cl.id)}
+                onDragOver={(e) => handleCardDragOver(e, cl.id)}
+                onDrop={(e) => e.preventDefault()}
+                onDragEnd={handleCardDragEnd}
+                className={`border border-zinc-200 rounded-2xl p-5 hover:border-zinc-300 transition ${
+                  cardDragOverId === cl.id && cardDragId !== cl.id ? "bg-[#F77418]/5" : ""
+                } ${cardDragId === cl.id ? "opacity-50" : ""}`}
+              >
                 <div className="flex items-center justify-between mb-1">
-                  <div className="font-display font-bold text-lg text-zinc-900">{cl.title}</div>
-                  <span className="text-xs font-medium text-[#F77418]">{done}/{cl.items.length} done</span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div
+                      className="shrink-0 p-1 -ml-1 cursor-grab active:cursor-grabbing text-zinc-300 hover:text-zinc-500 transition-colors"
+                      title="Drag to reorder checklist"
+                    >
+                      <GripVertical className="w-4 h-4" />
+                    </div>
+                    <div className="font-display font-bold text-lg text-zinc-900 truncate">{cl.title}</div>
+                  </div>
+                  <span className="text-xs font-medium text-[#F77418] shrink-0">{done}/{cl.items.length} done</span>
                 </div>
 
                 <div className="w-full h-1.5 bg-zinc-100 rounded-full mb-4 overflow-hidden">

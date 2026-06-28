@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -26,9 +25,35 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
 
+  // --- ALL HOOKS MUST STAY ABOVE ANY CONDITIONAL RETURN ---
+
   useEffect(() => {
     api.get<Update[]>("/client/updates").then((r) => setUpdates(r.data || []));
   }, []);
+
+  const closePreview = () => {
+    if (iframeUrl) URL.revokeObjectURL(iframeUrl);
+    setIframeUrl(null);
+  };
+
+  // Escape closes whichever modal is on top: preview first, then the update modal
+  useEffect(() => {
+    if (!iframeUrl && !selectedUpdate) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (iframeUrl) {
+        closePreview();
+      } else if (selectedUpdate) {
+        setSelectedUpdate(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [iframeUrl, selectedUpdate]);
+
+  // --- NOW it's safe to branch, since every hook above runs on every render ---
 
   if (!updates) return <Loader />;
 
@@ -48,7 +73,7 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
 
   const isReports = filterCategory === "Report";
 
-  // HTML preview handlers
+  // HTML preview handlers (not hooks, fine to keep below the early return)
   const openHtmlPreview = async (url: string) => {
     setLoadingPreview(true);
     try {
@@ -62,11 +87,6 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
     } finally {
       setLoadingPreview(false);
     }
-  };
-
-  const closePreview = () => {
-    if (iframeUrl) URL.revokeObjectURL(iframeUrl);
-    setIframeUrl(null);
   };
 
   // Reusable attachment chip renderer
@@ -91,7 +111,7 @@ export default function ClientUpdatesView({ filterCategory }: { filterCategory?:
     }
 
     return (
-      <a 
+      <a
         href={u.attachment_url}
         target="_blank"
         rel="noopener noreferrer"

@@ -11,9 +11,10 @@ import {
   Modal,
   Input,
   Select,
-  Textarea,
+  Textarea
 } from "@/components/primitives";
-import { Receipt, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Receipt, Plus, Trash2, CheckCircle2, Download } from "lucide-react";
+import { RebildMarkOnLight } from "@/components/rebild-logo";
 
 interface ItemForm { description: string; qty: number | string; unit_price: number | string }
 interface Client { id: string; name: string; email: string }
@@ -21,6 +22,7 @@ interface Invoice {
   id: string;
   number: string;
   client_name: string;
+  client_email?: string;
   total: number;
   subtotal?: number;
   tax?: number;
@@ -325,72 +327,144 @@ export default function AdminInvoicesPage() {
           </PrimaryButton>
         </div>
       </Modal>
+
       <Modal open={!!open} onClose={() => setOpen(null)} title={open?.number || "Invoice"} size="lg">
-  {open && (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-xs text-zinc-500">Billed to</div>
-          <div className="font-semibold text-zinc-900">{open.client_name}</div>
-        </div>
-        <Pill status={open.status} />
-      </div>
+        {open && (
+          <div>
+            {/* Everything inside here is what gets printed / downloaded as PDF */}
+            <div id="invoice-print-area">
+              <div className="flex justify-between items-start mb-6">
+                <RebildMarkOnLight size="lg" />
+                <div className="text-right">
+                  <Pill status={open.status} />
+                  <div className="text-xs text-zinc-500 mt-2 font-mono">{open.number}</div>
+                </div>
+              </div>
 
-      <div className="border border-zinc-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
-            <tr>
-              <th className="text-left px-3 py-2">Description</th>
-              <th className="text-right px-3 py-2">Qty</th>
-              <th className="text-right px-3 py-2">Unit price</th>
-              <th className="text-right px-3 py-2">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(open as any).items?.map((it: any, i: number) => (
-              <tr key={i} className="border-t border-zinc-100">
-                <td className="px-3 py-2 text-zinc-900">{it.description}</td>
-                <td className="px-3 py-2 text-right text-zinc-600">{it.qty}</td>
-                <td className="px-3 py-2 text-right text-zinc-600">₹{it.unit_price?.toFixed(2)}</td>
-                <td className="px-3 py-2 text-right font-medium text-zinc-900">
-                  ₹{(it.qty * it.unit_price).toFixed(2)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              <div className="grid sm:grid-cols-2 gap-4 mb-6 text-sm">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-mono">
+                    From
+                  </div>
+                  <div className="font-semibold text-zinc-900 mt-1">Rebild Marketing</div>
+                  <div className="text-zinc-500 text-xs mt-1">billing@rebild.in</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-mono">
+                    Billed to
+                  </div>
+                  <div className="font-semibold text-zinc-900 mt-1">{open.client_name}</div>
+                  {open.client_email && (
+                    <div className="text-zinc-500 text-xs mt-1">{open.client_email}</div>
+                  )}
+                </div>
+              </div>
 
-      <div className="space-y-1.5 border-t border-zinc-100 pt-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-zinc-500">Subtotal</span>
-          <span className="text-zinc-900">₹{(open as any).subtotal?.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-zinc-500">Tax</span>
-          <span className="text-zinc-900">₹{(open as any).tax?.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between font-display font-black text-xl text-zinc-900 pt-1">
-          <span>Total</span>
-          <span>₹{open.total?.toFixed(2)}</span>
-        </div>
-      </div>
+              <div className="border border-zinc-200 rounded-xl overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
+                    <tr>
+                      <th className="text-left px-4 py-3">Description</th>
+                      <th className="text-right px-4 py-3 w-16">Qty</th>
+                      <th className="text-right px-4 py-3 w-28">Unit price</th>
+                      <th className="text-right px-4 py-3 w-28">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(open.items || []).map((it, i) => (
+                      <tr key={i} className="border-t border-zinc-100">
+                        <td className="px-4 py-3 text-zinc-900">{it.description}</td>
+                        <td className="px-4 py-3 text-right text-zinc-700">{it.qty}</td>
+                        <td className="px-4 py-3 text-right text-zinc-700 font-mono">
+                          ₹{it.unit_price?.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-zinc-900">
+                          ₹{(it.qty * it.unit_price).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-      {(open as any).due_date && (
-        <div className="text-xs text-zinc-500">
-          Due date: {new Date((open as any).due_date).toLocaleDateString()}
-        </div>
-      )}
+              <div className="mt-4 flex justify-end">
+                <div className="w-full sm:w-72 space-y-2 text-sm">
+                  <div className="flex justify-between text-zinc-600">
+                    <span>Subtotal</span>
+                    <span className="font-mono">₹{open.subtotal?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-zinc-600">
+                    <span>Tax</span>
+                    <span className="font-mono">₹{open.tax?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-zinc-200 pt-2 font-display font-bold text-lg text-zinc-900">
+                    <span>Total</span>
+                    <span>₹{open.total?.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
 
-      {(open as any).memo && (
-        <div className="text-xs text-zinc-500 border-t border-zinc-100 pt-3">
-          <span className="font-semibold text-zinc-700">Memo: </span>
-          {(open as any).memo}
-        </div>
-      )}
-    </div>
-  )}
-</Modal>
+              {open.memo && (
+                <div className="mt-6 text-sm bg-zinc-50 border border-zinc-200 rounded-md p-4">
+                  <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-mono mb-1">
+                    Memo
+                  </div>
+                  <div className="text-zinc-700">{open.memo}</div>
+                </div>
+              )}
+
+              {open.due_date && (
+                <div className="mt-4 text-xs text-zinc-500">
+                  Due date: {new Date(open.due_date).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+
+            {/* Action button — excluded from print */}
+            <div className="mt-8 flex justify-end print:hidden">
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-2 border border-zinc-300 hover:border-zinc-900 px-4 py-2.5 rounded-md text-sm font-semibold"
+                data-testid="download-invoice"
+              >
+                <Download className="w-4 h-4" /> Download / Print
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Print styles: only the invoice content renders when printing/saving as PDF */}
+      {/* Print styles: only the invoice content renders when printing/saving as PDF */}
+<style jsx global>{`
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    #invoice-print-area,
+    #invoice-print-area * {
+      visibility: visible;
+    }
+    #invoice-print-area {
+      position: absolute;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      padding: 32px;
+      background: white;
+    }
+    /* The Modal's scroll wrapper likely has a fixed height + overflow-y-auto,
+       which clips content to whatever fit on screen. Strip height/overflow
+       constraints from EVERY element during print so nothing gets clipped. */
+    html,
+    body,
+    * {
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+  }
+`}</style>
     </div>
   );
 }

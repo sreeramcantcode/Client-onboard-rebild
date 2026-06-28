@@ -62,13 +62,7 @@ export default function AdminUpdatesPage() {
     load();
   }, []);
 
-  // ⚠️ MOVED: this useEffect must run unconditionally on every render, in the
-  // same order every time. It was previously declared AFTER the
-  // `if (!updates) return <Loader />` early return below, which meant React
-  // saw a different number of hooks on the first render (updates === null,
-  // this effect never registered) vs. later renders (updates populated, this
-  // effect registers) — that hook-count mismatch is React error #310, and is
-  // why this crashed in production once data loaded.
+ 
   useEffect(() => {
     if (!iframeUrl) return;
 
@@ -360,7 +354,7 @@ export default function AdminUpdatesPage() {
             </div>
 
             {!selectedFile ? (
-              <label className="flex items-center gap-2 w-fit cursor-pointer px-3 py-2 rounded-lg border border-dashed border-zinc-300 hover:border-[#F77418] hover:bg-orange-50 text-zinc-500 hover:text-[#F77418] text-sm transition">
+              <label className="flex items-center gap-2 w-fit cursor-pointer px-3 py-2 rounded-lg border border-dashed border-zinc-300 hover:border-[#F77418] hover:bg-white text-zinc-500  text-sm transition">
                 <Paperclip className="w-4 h-4" />
                 Attach file
                 <input
@@ -374,8 +368,8 @@ export default function AdminUpdatesPage() {
             ) : (
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-50 border border-orange-200 w-fit">
                 <FileText className="w-4 h-4 text-[#F77418] shrink-0" />
-                <span className="text-sm text-zinc-700 max-w-[220px] truncate">{selectedFile.name}</span>
-                <span className="text-xs text-zinc-400">
+                <span className="text-sm text-black max-w-[220px] truncate">{selectedFile.name}</span>
+                <span className="text-xs text-black">
                   ({(selectedFile.size / 1024).toFixed(0)} KB)
                 </span>
                 <button onClick={clearFile} className="ml-1 text-zinc-400 hover:text-red-500 transition">
