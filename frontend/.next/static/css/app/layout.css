@@ -870,6 +870,9 @@ video {
 .max-w-\[220px\]{
   max-width: 220px;
 }
+.max-w-\[280px\]{
+  max-width: 280px;
+}
 .max-w-\[85\%\]{
   max-width: 85%;
 }
@@ -878,9 +881,6 @@ video {
 }
 .max-w-md{
   max-width: 28rem;
-}
-.max-w-\[280px\]{
-  max-width: 280px;
 }
 .flex-1{
   flex: 1 1 0%;
@@ -1258,6 +1258,10 @@ video {
 .bg-zinc-600{
   --tw-bg-opacity: 1;
   background-color: rgb(82 82 91 / var(--tw-bg-opacity, 1));
+}
+.bg-\[\#ff8a3d\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 138 61 / var(--tw-bg-opacity, 1));
 }
 .bg-gradient-to-br{
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));

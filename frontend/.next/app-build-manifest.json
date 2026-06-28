@@ -1,19 +1,9 @@
 {
   "pages": {
-    "/client-portal/client/documents/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/client/documents/page.js"
-    ],
-    "/client-portal/client/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/client/layout.js"
-    ],
-    "/client-portal/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/layout.js"
+      "static/chunks/app/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -26,10 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/client-portal/login/page.js"
     ],
-    "/client-portal/client/page": [
+    "/client-portal/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/client/page.js"
+      "static/chunks/app/client-portal/layout.js"
     ],
     "/client-portal/admin/page": [
       "static/chunks/webpack.js",
@@ -46,10 +36,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/client-portal/admin/documents/page.js"
     ],
-    "/client-portal/admin/updates/page": [
+    "/client-portal/admin/invoices/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/client-portal/admin/updates/page.js"
+      "static/chunks/app/client-portal/admin/invoices/page.js"
+    ],
+    "/client-portal/client/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/client-portal/client/page.js"
+    ],
+    "/client-portal/client/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/client-portal/client/layout.js"
+    ],
+    "/client-portal/client/invoices/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/client-portal/client/invoices/page.js"
     ]
   }
 }

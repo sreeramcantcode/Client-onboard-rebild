@@ -105,8 +105,8 @@ export default function ClientDashboardPage() {
             </div>
             <Link
               href={`${PORTAL_BASE}/client/invoices`}
-              className="inline-flex items-center gap-2  hover:bg-[#ff8a3d] text-black font-bold px-5 py-3 rounded-md transition"
-              data-testid="dashboard-go-to-billing"
+              className="inline-flex items-center gap-2 bg-[#ff8a3d] text-black font-bold px-5 py-3 rounded-md transition"
+              
             >
               Go to billing
               <ArrowUpRight className="w-4 h-4" />
