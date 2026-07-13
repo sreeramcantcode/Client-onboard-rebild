@@ -334,7 +334,7 @@ export default function AdminInvoicesPage() {
             {/* Everything inside here is what gets printed / downloaded as PDF */}
             <div id="invoice-print-area">
               <div className="flex justify-between items-start mb-6">
-                <RebildMarkOnLight size="lg" />
+                <RebildMarkOnLight size="md" />
                 <div className="text-right">
                   <Pill status={open.status} />
                   <div className="text-xs text-zinc-500 mt-2 font-mono">{open.number}</div>
@@ -438,13 +438,9 @@ export default function AdminInvoicesPage() {
       {/* Print styles: only the invoice content renders when printing/saving as PDF */}
 <style jsx global>{`
   @media print {
-    body * {
-      visibility: hidden;
-    }
+    body * { visibility: hidden; }
     #invoice-print-area,
-    #invoice-print-area * {
-      visibility: visible;
-    }
+    #invoice-print-area * { visibility: visible; }
     #invoice-print-area {
       position: absolute;
       left: 0 !important;
@@ -453,12 +449,7 @@ export default function AdminInvoicesPage() {
       padding: 32px;
       background: white;
     }
-    /* The Modal's scroll wrapper likely has a fixed height + overflow-y-auto,
-       which clips content to whatever fit on screen. Strip height/overflow
-       constraints from EVERY element during print so nothing gets clipped. */
-    html,
-    body,
-    * {
+    html, body, * {
       height: auto !important;
       max-height: none !important;
       overflow: visible !important;

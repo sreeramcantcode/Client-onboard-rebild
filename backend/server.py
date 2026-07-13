@@ -439,6 +439,7 @@ async def create_document(payload: DocumentIn, _: dict = Depends(require_admin))
         "client_id": payload.client_id,
         "attachment_url": payload.attachment_url,
         "attachment_name": payload.attachment_name,
+        "link_url": payload.link_url,
         "created_at": now_iso(),
     }
     await db.documents.insert_one(doc)
@@ -457,7 +458,7 @@ async def create_document(payload: DocumentIn, _: dict = Depends(require_admin))
                     "id": str(uuid.uuid4()),
                     "user_id": cid,
                     "title": f"New document: {payload.title}",
-                    "body": payload.attachment_name,
+                    "body": payload.attachment_name or payload.link_url,
                     "type": "document",
                     "read": False,
                     "link": "/client/documents",
